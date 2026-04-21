@@ -18,8 +18,6 @@ public class EnemyIdleState : State
     public override void Execute()
     {
         Vector3 dir = _enemy.homePoint.position - _enemy.transform.position;
-        dir.y = 0;
-
         
         if (dir.magnitude > 0.5f)
         {

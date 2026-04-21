@@ -15,8 +15,7 @@ public class EnemyChaseState : State
     public override void Execute()
     {
         Vector3 dir = _enemy.Target.position - _enemy.transform.position;
-        dir.y = 0;
-        _enemy.Move(dir.normalized);
+        _enemy.MoveWithSteering(dir.normalized);
         _enemy.Look(dir);
     }
 
