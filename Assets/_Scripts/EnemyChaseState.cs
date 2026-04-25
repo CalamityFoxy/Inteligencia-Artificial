@@ -23,4 +23,24 @@ public class EnemyChaseState : State
     {
         _enemy.Stop();
     }
+}public class EnemyPatrollState : State
+{
+    private EnemyController _enemy;
+
+    public EnemyPatrollState(EnemyController enemy)
+    {
+        _enemy = enemy;
+    }
+
+    public override void Enter() { }
+
+    public override void Execute()
+    {
+        Debug.Log("Patroll");
+    }
+
+    public override void Exit()
+    {
+        _enemy.Stop();
+    }
 }

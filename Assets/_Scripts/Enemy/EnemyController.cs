@@ -1,4 +1,6 @@
 
+using System;
+using TreeEditor;
 using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
@@ -36,28 +38,61 @@ public class EnemyController : MonoBehaviour
     private float _perceptionTimer;
     private float _loseSightTimer;
 
+    QuestionNode rootNode;
+    public QuestionNode RootNode { get => rootNode; set => rootNode = value; }
+
+    EnemyIdleState _enemyIdleState;
+    EnemyPatrollState _enemyPatrollState;
     private void Awake()
     {
+
         _rb = GetComponent<Rigidbody>();
+
+        var chase = new EnemyChaseState(this);
+        _enemyIdleState = new EnemyIdleState(this);
+        _enemyPatrollState = new EnemyPatrollState(this);
+        _fsm = new FSM();
+
+        ActionNode respawning = new ActionNode(Respawn);
+        ActionNode backToBase = new ActionNode(Respawn);
+        ActionNode searchFlag = new ActionNode(SearchFlag);
+        ActionNode attackPlayer = new ActionNode(AttackPlayer);
+        ActionNode patroll = new ActionNode(ChangeToPatrollState);
+
+        QuestionNode isMelee = new QuestionNode(IsMelee, searchFlag, patroll);
+
+        QuestionNode isFLagDropped = new QuestionNode(IsFlagDropped, searchFlag, attackPlayer);
+        QuestionNode isFLagOnHome = new QuestionNode(IsFlagHome, isMelee, isFLagDropped);
+        QuestionNode isFLagOnMe = new QuestionNode(IsFlagHome, backToBase, isFLagOnHome);
+        QuestionNode isAlive = new QuestionNode(IsAlive, isFLagOnHome, respawning);
+
+        RootNode = isAlive;
+    }
+
+    private void ChangeToPatrollState()
+    {
+        if (true)
+        {
+            _fsm.AddTransition(_enemyIdleState, () => IsInTargetInLos(), _enemyPatrollState);
+        }
+    }
+
+    private bool IsInTargetInLos()
+    {
+        throw new NotImplementedException();
+    }
+
+
+    private void AttackPlayer()
+    {
     }
 
     private void Start()
     {
 
-        var idle = new EnemyIdleState(this);
-        var chase = new EnemyChaseState(this);
+        
         obstacleAvoidance = new ObstacleAvoidance(transform, obstacleAvoidanceRadius, obstacleAvoidanceAngle, obstacleAvoidancePersonalArea, obstacleAvoidanceMask);
 
-        _fsm = new FSM();
-
-        // acá agregamos las transiciones que vamos a tener, en nuestro diccionario va del From ( estado actual) + condición booleana si se cumple va al To(estado que queremos que vaya).
-        _fsm.AddTransition(idle, () => CanSeeTarget, chase);
-
-
-        _fsm.AddTransition(chase, () => ShouldLoseTarget(), idle);
-
-
-        _fsm.SetInitialState(idle);
     }
 
     private void Update()
@@ -67,12 +102,15 @@ public class EnemyController : MonoBehaviour
          Debug.Log(_fsm.CurrentState);
     }
 
+    private bool IsFlagHome() { return true; }
+    private bool IsFlagDropped() { return true; }
+    private bool IsAlive() { return true; }
+    private void Respawn() {  }
+    private void SearchFlag() {  }
 
+    private bool IsMelee() {  return true; }
     private void UpdatePerception()
     {
-        /*  _perceptionTimer += Time.deltaTime;
-          if (_perceptionTimer < perceptionInterval) return;
-          _perceptionTimer = 0f;*/
 
         CanSeeTarget =
             los.CheckRange(Target) &&
@@ -183,5 +221,45 @@ public class EnemyController : MonoBehaviour
                     Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
             }
         }
+    }
+}
+
+
+public interface ITreeeNode
+{
+    void Execute();
+}
+public class QuestionNode : ITreeeNode
+{
+    private ITreeeNode trueNode;
+    private ITreeeNode flaseNode;
+    private Func<bool> question;
+
+    public QuestionNode(Func<bool> question, ITreeeNode trueNode, ITreeeNode falseNode)
+    {
+        this.question = question;
+        this.trueNode = trueNode;
+        this.flaseNode = falseNode;
+    }
+    public void Execute()
+    {
+        if (question.Invoke())
+            trueNode.Execute();
+        else
+            flaseNode.Execute();
+    }
+}
+public class ActionNode : ITreeeNode
+{
+    private Action action;
+
+    public ActionNode(Action action)
+    {
+        this.action = action;
+    }
+
+    public void Execute()
+    {
+        action?.Invoke();
     }
 }
