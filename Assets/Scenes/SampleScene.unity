@@ -3742,6 +3742,8 @@ GameObject:
   - component: {fileID: 1837271701}
   - component: {fileID: 1837271700}
   - component: {fileID: 1837271699}
+  - component: {fileID: 1837271703}
+  - component: {fileID: 1837271702}
   m_Layer: 0
   m_Name: Range_Enemy (1)
   m_TagString: Untagged
@@ -3841,6 +3843,50 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1837271697}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1837271702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837271697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ef06ed18bb9e5f4e964d068027d6f73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reference: {fileID: 1837271698}
+  range: 12.93
+  angle: 42.29
+  obsMask:
+    serializedVersion: 2
+    m_Bits: 8
+--- !u!114 &1837271703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837271697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23476da89bdf4d3478463f2ab0bdd76a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Target: {fileID: 1903174447}
+  los: {fileID: 1837271702}
+  speed: 5
+  currentSpeed: {x: 0, y: 0, z: 0}
+  perceptionInterval: 0.2
+  loseSightDelay: 1.5
+  obstacleAvoidanceRadius: 0
+  obstacleAvoidanceAngle: 0
+  obstacleAvoidancePersonalArea: 0
+  obstacleAvoidanceMask:
+    serializedVersion: 2
+    m_Bits: 0
+  obstacleAvoidanceColliders: []
+  homePoint: {fileID: 1882858271}
 --- !u!1 &1855203236
 GameObject:
   m_ObjectHideFlags: 0

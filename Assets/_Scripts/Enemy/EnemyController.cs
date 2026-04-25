@@ -58,6 +58,7 @@ public class EnemyController : MonoBehaviour
     }
 
     public bool IsFlagHome() { return true; }
+    public bool IsFlagOnMe() { return false; }
     public bool IsFlagDropped() { return true; }
     public bool IsAlive() { return true; }
     public void Respawn() { }

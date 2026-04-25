@@ -4,10 +4,12 @@ using UnityEngine;
 public class EnemyIdleState : State
 {
     private EnemyController _enemy;
+    private Transform homePoint;
 
-    public EnemyIdleState(EnemyController enemy)
+    public EnemyIdleState(EnemyController enemy, Transform homepoint)
     {
         _enemy = enemy;
+        homePoint = homepoint;
     }
 
     public override void Enter()
@@ -17,7 +19,7 @@ public class EnemyIdleState : State
 
     public override void Execute()
     {
-        Vector3 dir = _enemy.homePoint.position - _enemy.transform.position;
+        /*Vector3 dir = _enemy.homePoint.position - _enemy.transform.position;
         
         if (dir.magnitude > 0.5f)
         {
@@ -28,7 +30,7 @@ public class EnemyIdleState : State
         {
             _enemy.Stop();
             _enemy.Look(_enemy.homePoint.forward);
-        }
+        }*/
     }
 
     public override void Exit() { }
