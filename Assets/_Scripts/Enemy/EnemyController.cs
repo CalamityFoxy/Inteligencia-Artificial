@@ -25,90 +25,45 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float obstacleAvoidanceAngle;
     [SerializeField] private float obstacleAvoidancePersonalArea;
     [SerializeField] private LayerMask obstacleAvoidanceMask;
-    [SerializeField] private Collider[]  obstacleAvoidanceColliders;
-    
+    [SerializeField] private Collider[] obstacleAvoidanceColliders;
+
     [Header("References")]
     public Transform homePoint;
 
     public bool CanSeeTarget { get; private set; }
 
-    private Rigidbody _rb;
-    private FSM _fsm;
     private ObstacleAvoidance obstacleAvoidance;
+    private Rigidbody _rb;
     private float _perceptionTimer;
     private float _loseSightTimer;
 
-    QuestionNode rootNode;
-    public QuestionNode RootNode { get => rootNode; set => rootNode = value; }
-
-    EnemyIdleState _enemyIdleState;
-    EnemyPatrollState _enemyPatrollState;
     private void Awake()
     {
-
         _rb = GetComponent<Rigidbody>();
-
-        var chase = new EnemyChaseState(this);
-        _enemyIdleState = new EnemyIdleState(this);
-        _enemyPatrollState = new EnemyPatrollState(this);
-        _fsm = new FSM();
-
-        ActionNode respawning = new ActionNode(Respawn);
-        ActionNode backToBase = new ActionNode(Respawn);
-        ActionNode searchFlag = new ActionNode(SearchFlag);
-        ActionNode attackPlayer = new ActionNode(AttackPlayer);
-        ActionNode patroll = new ActionNode(ChangeToPatrollState);
-
-        QuestionNode isMelee = new QuestionNode(IsMelee, searchFlag, patroll);
-
-        QuestionNode isFLagDropped = new QuestionNode(IsFlagDropped, searchFlag, attackPlayer);
-        QuestionNode isFLagOnHome = new QuestionNode(IsFlagHome, isMelee, isFLagDropped);
-        QuestionNode isFLagOnMe = new QuestionNode(IsFlagHome, backToBase, isFLagOnHome);
-        QuestionNode isAlive = new QuestionNode(IsAlive, isFLagOnHome, respawning);
-
-        RootNode = isAlive;
-    }
-
-    private void ChangeToPatrollState()
-    {
-        if (true)
-        {
-            _fsm.AddTransition(_enemyIdleState, () => IsInTargetInLos(), _enemyPatrollState);
-        }
-    }
-
-    private bool IsInTargetInLos()
-    {
-        throw new NotImplementedException();
-    }
-
-
-    private void AttackPlayer()
-    {
-    }
-
-    private void Start()
-    {
-
-        
-        obstacleAvoidance = new ObstacleAvoidance(transform, obstacleAvoidanceRadius, obstacleAvoidanceAngle, obstacleAvoidancePersonalArea, obstacleAvoidanceMask);
-
     }
 
     private void Update()
     {
         UpdatePerception();
-        _fsm.UpdateStatesFSM();
-         Debug.Log(_fsm.CurrentState);
     }
 
-    private bool IsFlagHome() { return true; }
-    private bool IsFlagDropped() { return true; }
-    private bool IsAlive() { return true; }
-    private void Respawn() {  }
-    private void SearchFlag() {  }
 
-    private bool IsMelee() {  return true; }
+    public bool IsInTargetInLos()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void AttackPlayer()
+    {
+    }
+
+    public bool IsFlagHome() { return true; }
+    public bool IsFlagDropped() { return true; }
+    public bool IsAlive() { return true; }
+    public void Respawn() { }
+    public void SearchFlag() { }
+
+    public bool IsMelee() { return true; }
     private void UpdatePerception()
     {
 
@@ -135,7 +90,7 @@ public class EnemyController : MonoBehaviour
     public void Move(Vector3 dir)
     {
         dir = obstacleAvoidance.GetDir(dir, false);
-        dir.y = 0f; 
+        dir.y = 0f;
 
         Vector3 velocity = dir.normalized * speedIdle;
         velocity.y = _rb.velocity.y;
@@ -181,7 +136,7 @@ public class EnemyController : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, obstacleAvoidancePersonalArea);
 
-     
+
 
         // Ángulo de detección
         Gizmos.color = Color.cyan;
@@ -221,45 +176,5 @@ public class EnemyController : MonoBehaviour
                     Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
             }
         }
-    }
-}
-
-
-public interface ITreeeNode
-{
-    void Execute();
-}
-public class QuestionNode : ITreeeNode
-{
-    private ITreeeNode trueNode;
-    private ITreeeNode flaseNode;
-    private Func<bool> question;
-
-    public QuestionNode(Func<bool> question, ITreeeNode trueNode, ITreeeNode falseNode)
-    {
-        this.question = question;
-        this.trueNode = trueNode;
-        this.flaseNode = falseNode;
-    }
-    public void Execute()
-    {
-        if (question.Invoke())
-            trueNode.Execute();
-        else
-            flaseNode.Execute();
-    }
-}
-public class ActionNode : ITreeeNode
-{
-    private Action action;
-
-    public ActionNode(Action action)
-    {
-        this.action = action;
-    }
-
-    public void Execute()
-    {
-        action?.Invoke();
     }
 }

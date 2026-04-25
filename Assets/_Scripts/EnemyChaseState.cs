@@ -26,10 +26,12 @@ public class EnemyChaseState : State
 }public class EnemyPatrollState : State
 {
     private EnemyController _enemy;
+    private Transform playerTarget;
 
-    public EnemyPatrollState(EnemyController enemy)
+    public EnemyPatrollState(EnemyController enemy, Transform target)
     {
         _enemy = enemy;
+        playerTarget = target;
     }
 
     public override void Enter() { }
@@ -38,6 +40,8 @@ public class EnemyChaseState : State
     {
         Debug.Log("Patroll");
     }
+
+    private void Shoot() { }
 
     public override void Exit()
     {

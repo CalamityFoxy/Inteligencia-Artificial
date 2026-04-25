@@ -1,46 +1,48 @@
 
 using System;
 using System.Collections.Generic;
+public enum EnemyStateType
+{
+    Idle,
+    Chase,
+    Attack,
+    Patroll,
+    ReturnToBase
+}
 
 public class FSM
 {
+
     private State _currentState;
-    private Dictionary<State, List<(Func<bool> condition, State target)>> _transitions = new();
+    private Dictionary<EnemyStateType, State> _states = new();
 
     public State CurrentState => _currentState;
 
-    public void SetInitialState(State state)
+    public void RegisterState(EnemyStateType type, State state)
     {
-        _currentState = state;
+        _states[type] = state;
+    }
+
+    public void SetInitialState(EnemyStateType type)
+    {
+        _currentState = _states[type];
         _currentState.Enter();
     }
 
-    public void AddTransition(State from, Func<bool> condition, State to)
+    public void SetState(EnemyStateType type)
     {
-        if (!_transitions.ContainsKey(from))
-            _transitions[from] = new List<(Func<bool>, State)>();
+        var newState = _states[type];
 
-        _transitions[from].Add((condition, to));
+        // El guard que mencionamos: si ya estoy ahí, no hago nada
+        if (_currentState == newState) return;
+
+        _currentState.Exit();
+        _currentState = newState;
+        _currentState.Enter();
     }
 
-    public void UpdateStatesFSM()
+    public void Execute()
     {
-        
-        if (_transitions.ContainsKey(_currentState))
-        {
-            foreach (var t in _transitions[_currentState])
-            {
-                if (t.condition())
-                {
-                    _currentState.Exit();
-                    _currentState = t.target;
-                    _currentState.Enter();
-                    return; 
-                }
-            }
-        }
-
-        // Acá lo unico que hacemos es que si no cambio de estado que siga ejectuando la actual.
-        _currentState.Execute();
+        _currentState?.Execute();
     }
 }
