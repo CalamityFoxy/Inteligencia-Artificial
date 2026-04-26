@@ -29,7 +29,7 @@ public class MeleeEnemy : EnemyController
         var chase = new ActionNode(()=> meleeEnemyFsm.SetState(EnemyStateType.Chase));
 
         //QuestionNode isFlagOnMe = new QuestionNode(IsFlagOnMe,goBase,)
-        QuestionNode goToIdle = new QuestionNode(()=> CanSeeTarget, chase, idle); //Nodo testeo para ver si funciona bien esto y funciona BARBARO GRANDE LAUTIIIIIIII
+        QuestionNode goToIdle = new QuestionNode(IsTargetTracked, chase, idle); //Nodo testeo para ver si funciona bien esto y funciona BARBARO GRANDE LAUTIIIIIIII
        QuestionNode isAlive = new QuestionNode(IsAlive, goToIdle , respawning);
 
 

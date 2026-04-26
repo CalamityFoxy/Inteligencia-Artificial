@@ -18,7 +18,7 @@ public class EnemyController : MonoBehaviour
 
     [Header("Perception")]
     [SerializeField] private float perceptionInterval = 0.2f;
-    [SerializeField] private float loseSightDelay = 1.5f;
+    [SerializeField] private float loseSightDelay = 18f;
 
     [Header("Vida")]
     [SerializeField] private float health;
@@ -35,6 +35,7 @@ public class EnemyController : MonoBehaviour
     public Transform homePoint;
 
     public bool CanSeeTarget { get; private set; }
+    public Vector3 LastKnownTargetPosition { get; private set; }
 
     private ObstacleAvoidance obstacleAvoidance;
     private Rigidbody _rb;
@@ -69,7 +70,7 @@ public class EnemyController : MonoBehaviour
     public void AttackPlayer()
     {
     }
-
+    public bool IsTargetTracked() => !ShouldLoseTarget();
     public bool IsFlagHome() { return true; }
     public bool IsFlagOnMe() { return false; }
     public bool IsFlagDropped() { return true; }
@@ -89,6 +90,8 @@ public class EnemyController : MonoBehaviour
             los.CheckRange(Target) &&
             los.CheckAngle(Target) &&
             los.CheckView(Target);
+        if (CanSeeTarget)
+            LastKnownTargetPosition = Target.position;
     }
 
 
@@ -121,13 +124,28 @@ public class EnemyController : MonoBehaviour
 
     public void MoveWithSteering(Vector3 dir)
     {
+        /*  dir = obstacleAvoidance.GetDir(dir).NoY();
+          var desired_velocity = (Target.transform.position - transform.position).NoY().normalized * speed;
+          var steering = desired_velocity - currentSpeed;
+
+          currentSpeed += steering * Time.deltaTime;
+
+          transform.position += currentSpeed;*/
+
         dir = obstacleAvoidance.GetDir(dir).NoY();
-        var desired_velocity = (Target.transform.position - transform.position).NoY().normalized * speed;
-        var steering = desired_velocity - currentSpeed;
 
+
+        Vector3 desired_velocity = dir.normalized * speed;
+        Vector3 steering = desired_velocity - currentSpeed;
+
+        //  Integracion (aceleracion -> velocidad)
         currentSpeed += steering * Time.deltaTime;
+        currentSpeed = Vector3.ClampMagnitude(currentSpeed, speed); // que no se dispare
 
-        transform.position += currentSpeed;
+
+        Vector3 vel = currentSpeed;
+        vel.y = _rb.velocity.y;
+        _rb.velocity = vel;
     }
 
     public void Stop()
