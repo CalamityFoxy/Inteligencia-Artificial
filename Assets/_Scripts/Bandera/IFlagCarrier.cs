@@ -2,7 +2,11 @@ using UnityEngine;
 
 public interface IFlagCarrier
 {
-    Team Team { get; }
     Transform Transform { get; }
+    Transform FlagHolder { get; }   
+    Team Team { get; }
     bool notDead { get; }
+
+    void SetFlag(Flag flag);
+    void ClearFlag();
 }
