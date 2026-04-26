@@ -77,6 +77,10 @@ public class EnemyController : MonoBehaviour
     public void Respawn() { }
     public void SearchFlag() { }
 
+    public void returnToBase()
+    {
+
+    }
     public bool IsMelee() { return true; }
     private void UpdatePerception()
     {

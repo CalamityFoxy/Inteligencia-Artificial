@@ -23,16 +23,17 @@ public class MeleeEnemy : EnemyController
         ActionNode respawning = new ActionNode(Respawn);
         ActionNode searchFlag = new ActionNode(SearchFlag);
         ActionNode attackPlayer = new ActionNode(AttackPlayer);
+        ActionNode goBase = new ActionNode(returnToBase);
 
         var idle = new ActionNode(()=> meleeEnemyFsm.SetState(EnemyStateType.Idle));        
         var chase = new ActionNode(()=> meleeEnemyFsm.SetState(EnemyStateType.Chase));
 
-        // QuestionNode isFlagOnMe = new QuestionNode(IsFlagOnMe,)
-        QuestionNode goToIdle = new QuestionNode(()=> CanSeeTarget, chase, idle);
-        QuestionNode alive = new QuestionNode(IsAlive, goToIdle , respawning);
+        //QuestionNode isFlagOnMe = new QuestionNode(IsFlagOnMe,goBase,)
+        QuestionNode goToIdle = new QuestionNode(()=> CanSeeTarget, chase, idle); //Nodo testeo para ver si funciona bien esto y funciona BARBARO GRANDE LAUTIIIIIIII
+       QuestionNode isAlive = new QuestionNode(IsAlive, goToIdle , respawning);
 
 
-        rootNode = alive;
+        rootNode = isAlive;
 
 
     }
