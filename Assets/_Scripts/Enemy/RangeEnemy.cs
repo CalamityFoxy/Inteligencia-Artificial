@@ -2,8 +2,9 @@ public class RangeEnemy : EnemyController
 {
     QuestionNode rootNode;
     FSM rangeEnemyFsm;
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         rangeEnemyFsm = new FSM();
         rangeEnemyFsm.RegisterState(EnemyStateType.Idle, new EnemyIdleState(this, homePoint));
         rangeEnemyFsm.RegisterState(EnemyStateType.Patroll, new EnemyPatrollState(this, Target, homePoint));
@@ -24,8 +25,9 @@ public class RangeEnemy : EnemyController
         rootNode = isAlive;
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();  
         rootNode.Execute();
         rangeEnemyFsm.Execute();
     }

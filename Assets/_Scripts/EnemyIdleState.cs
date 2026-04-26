@@ -19,7 +19,7 @@ public class EnemyIdleState : State
 
     public override void Execute()
     {
-        /*Vector3 dir = _enemy.homePoint.position - _enemy.transform.position;
+        Vector3 dir = _enemy.homePoint.position - _enemy.transform.position;
         
         if (dir.magnitude > 0.5f)
         {
@@ -30,7 +30,7 @@ public class EnemyIdleState : State
         {
             _enemy.Stop();
             _enemy.Look(_enemy.homePoint.forward);
-        }*/
+        }
     }
 
     public override void Exit() { }

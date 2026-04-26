@@ -1,15 +1,15 @@
 
 using System;
-using TreeEditor;
-using Unity.VisualScripting;
+
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+
 
 public class EnemyController : MonoBehaviour
 {
     [Header("References")]
     public Transform Target;
     public LIneOfSight los;
+
 
     [Header("Movement")]
     public float speed;
@@ -19,6 +19,10 @@ public class EnemyController : MonoBehaviour
     [Header("Perception")]
     [SerializeField] private float perceptionInterval = 0.2f;
     [SerializeField] private float loseSightDelay = 1.5f;
+
+    [Header("Vida")]
+    [SerializeField] private float health;
+    [SerializeField] protected float maxHealth;
 
     [Header("ObstacleAvoidance")]
     [SerializeField] private float obstacleAvoidanceRadius;
@@ -37,12 +41,21 @@ public class EnemyController : MonoBehaviour
     private float _perceptionTimer;
     private float _loseSightTimer;
 
-    private void Awake()
+    protected virtual void Awake()
     {
+        health = maxHealth;
+
         _rb = GetComponent<Rigidbody>();
+        obstacleAvoidance = new ObstacleAvoidance(
+       transform,
+       obstacleAvoidanceRadius,
+       obstacleAvoidanceAngle,
+       obstacleAvoidancePersonalArea,
+       obstacleAvoidanceMask
+   );
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         UpdatePerception();
     }
@@ -60,7 +73,7 @@ public class EnemyController : MonoBehaviour
     public bool IsFlagHome() { return true; }
     public bool IsFlagOnMe() { return false; }
     public bool IsFlagDropped() { return true; }
-    public bool IsAlive() { return true; }
+    public bool IsAlive() => health > 0;    
     public void Respawn() { }
     public void SearchFlag() { }
 

@@ -3879,6 +3879,8 @@ MonoBehaviour:
   currentSpeed: {x: 0, y: 0, z: 0}
   perceptionInterval: 0.2
   loseSightDelay: 1.5
+  health: 0
+  maxHealth: 0
   obstacleAvoidanceRadius: 0
   obstacleAvoidanceAngle: 0
   obstacleAvoidancePersonalArea: 0
@@ -4461,8 +4463,8 @@ GameObject:
   - component: {fileID: 2089203337}
   - component: {fileID: 2089203336}
   - component: {fileID: 2089203340}
-  - component: {fileID: 2089203342}
   - component: {fileID: 2089203341}
+  - component: {fileID: 2089203342}
   m_Layer: 0
   m_Name: Melee_Enemy
   m_TagString: Untagged
@@ -4614,36 +4616,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 2089203335}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48e34aa5a890e8e498757894a7e5b370, type: 3}
+  m_Script: {fileID: 11500000, guid: 6a66a787a4e489142ad5f777d498d0d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Target: {fileID: 1903174447}
   los: {fileID: 2089203340}
-  speed: 0.04
+  speed: 0.4
   currentSpeed: {x: 0, y: 0, z: 0}
   perceptionInterval: 0.2
   loseSightDelay: 1.5
-  obstacleAvoidanceRadius: 9.29
-  obstacleAvoidanceAngle: 134.8
-  obstacleAvoidancePersonalArea: 1.47
+  health: 0
+  maxHealth: 0
+  obstacleAvoidanceRadius: 3
+  obstacleAvoidanceAngle: 100
+  obstacleAvoidancePersonalArea: 1
   obstacleAvoidanceMask:
     serializedVersion: 2
     m_Bits: 8
-  obstacleAvoidanceColliders:
-  - {fileID: 1557058681}
-  - {fileID: 740867500}
-  - {fileID: 1748305918}
-  - {fileID: 2066401062}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 177415151}
-  - {fileID: 1089402528}
-  - {fileID: 488253217}
-  - {fileID: 1167717648}
-  - {fileID: 1424218759}
-  - {fileID: 1874220024}
-  - {fileID: 1125345566}
-  - {fileID: 1574540892}
+  obstacleAvoidanceColliders: []
   homePoint: {fileID: 1882858271}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
