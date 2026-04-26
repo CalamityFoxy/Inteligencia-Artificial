@@ -1,14 +1,17 @@
 
 
 
+
+using UnityEngine;
+
 public class MeleeEnemy : EnemyController
 {
     QuestionNode rootNode;
     FSM meleeEnemyFsm;
 
     public float meleeMaxHealth = 200f;
-    public float attackRange = 10f;
-    public float attackCooldown = 10f;
+    public float attackRange = 2f;
+    public float attackCooldown = 3f;
 
     protected override void Awake()
     {
@@ -42,6 +45,8 @@ public class MeleeEnemy : EnemyController
         base.Update();
         rootNode.Execute();
         meleeEnemyFsm.Execute();
+
+        Debug.Log(meleeEnemyFsm.CurrentState);
     }
 
 

@@ -29,7 +29,7 @@ public class EnemyMelee_ChaseState : State
         float distance = Vector3.Distance(target.position, _enemy.transform.position);
 
         // Dirección hacia el target
-        Vector3 dir = target.position - _enemy.LastKnownTargetPosition;
+        Vector3 dir = _enemy.LastKnownTargetPosition - _enemy.transform.position;
 
         if (distance > attackRange)
         {

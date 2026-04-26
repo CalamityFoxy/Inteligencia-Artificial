@@ -69,6 +69,7 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         HandleMovement();
         RotateToMouse();
         HandleStamina();
+        
     }
 
     void HandleMovement()

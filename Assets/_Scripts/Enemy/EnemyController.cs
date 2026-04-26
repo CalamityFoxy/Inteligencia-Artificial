@@ -35,6 +35,8 @@ public class EnemyController : MonoBehaviour
     public Transform homePoint;
 
     public bool CanSeeTarget { get; private set; }
+    private bool _hasEverSeenTarget = false;
+
     public Vector3 LastKnownTargetPosition { get; private set; }
 
     private ObstacleAvoidance obstacleAvoidance;
@@ -83,20 +85,27 @@ public class EnemyController : MonoBehaviour
 
     }
     public bool IsMelee() { return true; }
+   
+
     private void UpdatePerception()
     {
-
         CanSeeTarget =
             los.CheckRange(Target) &&
             los.CheckAngle(Target) &&
             los.CheckView(Target);
-        if (CanSeeTarget)
-            LastKnownTargetPosition = Target.position;
-    }
 
+        if (CanSeeTarget)
+        {
+            _hasEverSeenTarget = true;
+            LastKnownTargetPosition = Target.position;
+        }
+    }
 
     public bool ShouldLoseTarget()
     {
+        
+        if (!_hasEverSeenTarget) return true;
+
         if (CanSeeTarget)
         {
             _loseSightTimer = 0f;
