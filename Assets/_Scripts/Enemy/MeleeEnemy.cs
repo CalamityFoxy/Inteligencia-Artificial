@@ -6,7 +6,9 @@ public class MeleeEnemy : EnemyController
     QuestionNode rootNode;
     FSM meleeEnemyFsm;
 
-    private float meleeMaxHealth = 200f;
+    public float meleeMaxHealth = 200f;
+    public float attackRange = 10f;
+    public float attackCooldown = 10f;
 
     protected override void Awake()
     {
@@ -16,8 +18,8 @@ public class MeleeEnemy : EnemyController
 
         meleeEnemyFsm = new FSM();
 
-        meleeEnemyFsm.RegisterState(EnemyStateType.Idle, new EnemyIdleState(this,homePoint));
-        meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyChaseState(this));
+        meleeEnemyFsm.RegisterState(EnemyStateType.Idle, new EnemyIdleState(this, homePoint));
+        meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown));
         meleeEnemyFsm.SetInitialState(EnemyStateType.Idle);
 
         ActionNode respawning = new ActionNode(Respawn);
@@ -25,17 +27,14 @@ public class MeleeEnemy : EnemyController
         ActionNode attackPlayer = new ActionNode(AttackPlayer);
         ActionNode goBase = new ActionNode(returnToBase);
 
-        var idle = new ActionNode(()=> meleeEnemyFsm.SetState(EnemyStateType.Idle));        
-        var chase = new ActionNode(()=> meleeEnemyFsm.SetState(EnemyStateType.Chase));
+        var idle = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Idle));
+        var chase = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Chase));
 
         //QuestionNode isFlagOnMe = new QuestionNode(IsFlagOnMe,goBase,)
         QuestionNode goToIdle = new QuestionNode(IsTargetTracked, chase, idle); //Nodo testeo para ver si funciona bien esto y funciona BARBARO GRANDE LAUTIIIIIIII
-       QuestionNode isAlive = new QuestionNode(IsAlive, goToIdle , respawning);
-
+        QuestionNode isAlive = new QuestionNode(IsAlive, goToIdle, respawning); // JAJAHAHAJ
 
         rootNode = isAlive;
-
-
     }
 
     protected override void Update()

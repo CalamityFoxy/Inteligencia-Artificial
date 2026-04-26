@@ -48,7 +48,6 @@ public class ObstacleAvoidance
 
         if (nearColl == null)
         {
-            Debug.Log(currDir);
             return currDir;
         }
 
@@ -63,7 +62,6 @@ public class ObstacleAvoidance
         {
             newDir = -Vector3.Cross(_entity.up, dirToClosetPoint);
         }
-        Debug.Log("NewDir" + newDir);
         Debug.DrawRay(_entity.position, newDir, Color.red);
         return Vector3.Lerp(currDir, newDir, (_radius - Mathf.Clamp(nearCollDistance - _personalArea, 0, _radius)) / _radius);
     }
