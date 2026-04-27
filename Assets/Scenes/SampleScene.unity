@@ -4477,6 +4477,8 @@ MonoBehaviour:
   - {fileID: 1091543126}
   - {fileID: 1706254765}
   - {fileID: 2111511986}
+  iterationsBeforeRest: 4
+  idleDuration: 3
   shootPosition: {fileID: 770010112}
   projectilePrefab: {fileID: 681180798114000941, guid: 8ebfbc0c1f7be8345929af8e1b599f0b, type: 3}
   attackRange: 11.36
@@ -5292,7 +5294,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Target: {fileID: 1903174447}
   los: {fileID: 2089203340}
-  speed: 3
+  speed: 6
   currentSpeed: {x: 0, y: 0, z: 0}
   perceptionInterval: 0.2
   loseSightDelay: 6

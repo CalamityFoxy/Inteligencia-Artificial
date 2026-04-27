@@ -9,7 +9,7 @@ public class MeleeEnemy : EnemyController
 {
     QuestionNode rootNode;
     FSM meleeEnemyFsm;
-    
+
     public float meleeMaxHealth = 200f;
     public float attackRange = 2f;
     public float attackCooldown = 3f;
@@ -34,7 +34,7 @@ public class MeleeEnemy : EnemyController
         meleeEnemyFsm.RegisterState(EnemyStateType.Idle, _idleState);
         meleeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
         meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown));
-        
+
 
         ActionNode respawning = new ActionNode(Respawn);
         ActionNode searchFlag = new ActionNode(SearchFlag);
@@ -62,7 +62,7 @@ public class MeleeEnemy : EnemyController
         rootNode.Execute();
         meleeEnemyFsm.Execute();
 
-        Debug.Log(meleeEnemyFsm.CurrentState);
+        // Debug.Log(meleeEnemyFsm.CurrentState);
     }
 
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
