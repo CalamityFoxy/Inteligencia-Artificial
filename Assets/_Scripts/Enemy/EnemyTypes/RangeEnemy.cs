@@ -14,7 +14,7 @@ public class RangeEnemy : EnemyController
     {
         base.Awake();
         rangeEnemyFsm = new FSM();
-        rangeEnemyFsm.RegisterState(EnemyStateType.Idle, new EnemyIdleState(this, homePoint));
+       // rangeEnemyFsm.RegisterState(EnemyStateType.Idle, new EnemyIdleState(this, homePoint));
         rangeEnemyFsm.RegisterState(EnemyStateType.Patroll, new RangeEnemy_PatrollState(this, patrollWaypoints));
         rangeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown));
         rangeEnemyFsm.RegisterState(EnemyStateType.Attack, new RangeEnemy_AttackState(this, Target, attackRange, attackCooldown, shootPosition));

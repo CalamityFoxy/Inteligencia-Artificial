@@ -14,7 +14,7 @@ public class EnemyController : MonoBehaviour
     [Header("Movement")]
     public float speed;
     public Vector3 currentSpeed;
-    protected float speedIdle = 6f;
+    protected float speedIdle = 3f;
 
     [Header("Perception")]
     [SerializeField] private float perceptionInterval = 0.2f;
