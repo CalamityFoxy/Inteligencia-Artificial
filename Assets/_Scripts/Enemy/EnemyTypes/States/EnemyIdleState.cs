@@ -1,37 +1,39 @@
-
 using UnityEngine;
 
 public class EnemyIdleState : State
 {
     private EnemyController _enemy;
-    private Transform homePoint;
+    private float idleDuration;
+    private float idleTimer;
+    private Vector3 idleLookDirection;
 
-    public EnemyIdleState(EnemyController enemy, Transform homepoint)
+    public bool IdleFinished => idleTimer >= idleDuration;
+
+    public EnemyIdleState(EnemyController enemy, float idleDuration = 2.5f)
     {
         _enemy = enemy;
-        homePoint = homepoint;
+        this.idleDuration = idleDuration;
     }
 
     public override void Enter()
     {
-        
+        idleTimer = 0f;
+        _enemy.Stop();
+
+        idleLookDirection = _enemy.transform.forward;
     }
 
     public override void Execute()
     {
-        Vector3 dir = _enemy.homePoint.position - _enemy.transform.position;
+        idleTimer += Time.deltaTime;
         
-        if (dir.magnitude > 0.5f)
-        {
-            _enemy.Move(dir.normalized);
-            _enemy.Look(dir);
-        }
-        else
-        {
-            _enemy.Stop();
-            _enemy.Look(_enemy.homePoint.forward);
-        }
+      
+        _enemy.Stop();
+        _enemy.Look(idleLookDirection);
     }
 
-    public override void Exit() { }
+    public override void Exit()
+    {
+        idleTimer = 0f;
+    }
 }
