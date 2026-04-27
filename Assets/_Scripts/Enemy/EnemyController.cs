@@ -64,9 +64,9 @@ public class EnemyController : MonoBehaviour
     }
 
 
-    public bool IsInTargetInLos()
+    public bool IsTargetInLos()
     {
-        throw new NotImplementedException();
+        if (los.CheckView(Target) && los.CheckAngle(Target) && los.CheckRange(Target)) return true; else return false;
     }
 
     public void AttackPlayer()
@@ -75,8 +75,8 @@ public class EnemyController : MonoBehaviour
     public bool IsTargetTracked() => !ShouldLoseTarget();
     public bool IsFlagHome() { return true; }
     public bool IsFlagOnMe() { return false; }
-    public bool IsFlagDropped() { return true; }
-    public bool IsAlive() => health > 0;    
+    public bool IsFlagDropped() { return false; }
+    public bool IsAlive() => health > 0;
     public void Respawn() { }
     public void SearchFlag() { }
 
@@ -85,7 +85,7 @@ public class EnemyController : MonoBehaviour
 
     }
     public bool IsMelee() { return true; }
-   
+
 
     private void UpdatePerception()
     {
@@ -103,7 +103,7 @@ public class EnemyController : MonoBehaviour
 
     public bool ShouldLoseTarget()
     {
-        
+
         if (!_hasEverSeenTarget) return true;
 
         if (CanSeeTarget)

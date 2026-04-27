@@ -31,7 +31,7 @@ public class EnemyMelee_ChaseState : State
         // Dirección hacia el target
         Vector3 dir = _enemy.LastKnownTargetPosition - _enemy.transform.position;
 
-        if (distance > attackRange)
+        if (distance > attackRange && _enemy.IsTargetInLos())
         {
             _enemy.MoveWithSteering(dir);
             _enemy.Look(dir.NoY());
