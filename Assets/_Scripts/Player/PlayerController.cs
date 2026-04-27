@@ -21,19 +21,30 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
     private Camera cam;
     private float currentSpeed;
     private float stamina;
-    
+
     [Header("Flag Settings")]
     [SerializeField] private Team team;
     [SerializeField] private Transform holder;
     private bool isAlive = true;
     private Flag currentFlag;
-    public Transform FlagHolder => holder; 
+
+    public Transform FlagHolder => holder;
     public Transform Transform => transform;
     public Team Team => team;
     public bool notDead => isAlive;
     public bool HasFlag => currentFlag != null;
     public Flag CurrentFlag => currentFlag;
 
+    [Header("Attack")]
+    [SerializeField] private Transform attackPivot; // empty en el centro
+    [SerializeField] private Transform weapon;      // cubo hijo del pivot
+    [SerializeField] private float attackSpeed = 360f;
+    [SerializeField] private float attackAngle = 180f;
+    private bool swingLeftToRight = true; // alterna dirección
+
+    private bool isAttacking;
+    private float currentAngle;
+    private int direction = 1;
 
     public void SetFlag(Flag flag)
     {
@@ -56,12 +67,12 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         }
     }
 
-
     void Awake()
     {
         controller = GetComponent<CharacterController>();
         cam = Camera.main;
         stamina = maxStamina;
+        weapon.gameObject.SetActive(false);
     }
 
     void Update()
@@ -69,7 +80,13 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         HandleMovement();
         RotateToMouse();
         HandleStamina();
-        
+
+        HandleAttackInput();
+
+        if (isAttacking)
+        {
+            UpdateAttack();
+        }
     }
 
     void HandleMovement()
@@ -83,7 +100,6 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         bool isMoving = input.sqrMagnitude > 0.01f;
         bool wantsSprint = Input.GetKey(KeyCode.LeftShift);
 
-        // Determinar velocidad objetivo
         float targetSpeed = walkSpeed;
 
         if (wantsSprint && stamina > 0f && isMoving)
@@ -92,10 +108,8 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
             stamina -= staminaDrain * Time.deltaTime;
         }
 
-        // Interpolación suave de velocidad
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, acceleration * Time.deltaTime);
 
-        // Movimiento
         controller.Move(input * currentSpeed * Time.deltaTime);
     }
 
@@ -124,6 +138,65 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
             {
                 transform.rotation = Quaternion.LookRotation(lookPos);
             }
+        }
+    }
+
+    // ----------------- ATTACK -----------------
+
+    void HandleAttackInput()
+    {
+        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) && !isAttacking)
+        {
+            StartAttack();
+        }
+    }
+
+    void StartAttack()
+    {
+        isAttacking = true;
+        currentAngle = 0f;
+
+        // Activar arma
+        weapon.gameObject.SetActive(true);
+
+        // Alinear pivot con player
+        attackPivot.rotation = transform.rotation;
+
+        if (swingLeftToRight)
+        {
+            // empieza desde la izquierda (-90)
+            attackPivot.Rotate(Vector3.up, -attackAngle / 2f);
+            direction = 1; // va hacia la derecha
+        }
+        else
+        {
+            // empieza desde la derecha (+90)
+            attackPivot.Rotate(Vector3.up, attackAngle / 2f);
+            direction = -1; // va hacia la izquierda
+        }
+
+        // alternar para el próximo click
+        swingLeftToRight = !swingLeftToRight;
+    }
+
+    void UpdateAttack()
+    {
+        float step = attackSpeed * Time.deltaTime;
+        float delta = step * direction;
+
+        currentAngle += Mathf.Abs(delta);
+
+        attackPivot.Rotate(Vector3.up * delta);
+
+        if (currentAngle >= attackAngle)
+        {
+            isAttacking = false;
+
+            // resetear pivot
+            attackPivot.localRotation = Quaternion.identity;
+
+            // ocultar arma
+            weapon.gameObject.SetActive(false);
         }
     }
 }

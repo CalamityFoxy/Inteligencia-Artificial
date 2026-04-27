@@ -2,9 +2,13 @@
 using System;
 
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
-
-public class EnemyController : MonoBehaviour
+public interface IDamageable
+{
+    void TakeDamage(float damage);
+}
+public class EnemyController : MonoBehaviour, IDamageable
 {
     [Header("References")]
     public Transform Target;
@@ -23,6 +27,7 @@ public class EnemyController : MonoBehaviour
     [Header("Vida")]
     [SerializeField] private float health;
     [SerializeField] protected float maxHealth;
+    [SerializeField] protected Transform healingPoint;
 
     [Header("ObstacleAvoidance")]
     [SerializeField] private float obstacleAvoidanceRadius;
@@ -38,6 +43,7 @@ public class EnemyController : MonoBehaviour
     private bool _hasEverSeenTarget = false;
 
     public Vector3 LastKnownTargetPosition { get; private set; }
+    public float Health { get => health; set => health = value; }
 
     private ObstacleAvoidance obstacleAvoidance;
     private Rigidbody _rb;
@@ -133,24 +139,13 @@ public class EnemyController : MonoBehaviour
 
     public void MoveWithSteering(Vector3 dir)
     {
-        /*  dir = obstacleAvoidance.GetDir(dir).NoY();
-          var desired_velocity = (Target.transform.position - transform.position).NoY().normalized * speed;
-          var steering = desired_velocity - currentSpeed;
-
-          currentSpeed += steering * Time.deltaTime;
-
-          transform.position += currentSpeed;*/
-
         dir = obstacleAvoidance.GetDir(dir).NoY();
-
 
         Vector3 desired_velocity = dir.normalized * speed;
         Vector3 steering = desired_velocity - currentSpeed;
 
-        //  Integracion (aceleracion -> velocidad)
         currentSpeed += steering * Time.deltaTime;
         currentSpeed = Vector3.ClampMagnitude(currentSpeed, speed); // que no se dispare
-
 
         Vector3 vel = currentSpeed;
         vel.y = _rb.velocity.y;
@@ -221,5 +216,52 @@ public class EnemyController : MonoBehaviour
                     Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
             }
         }
+    }
+
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        Debug.Log(health);  
+        if (health < 0)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+    public bool IsLowHP()
+    {
+        return health <= maxHealth * 0.35f;
+    }
+
+    public bool IsHealed()
+    {
+        return health >= maxHealth * 0.9f;
+    }
+
+    public void Heal(float healingRate)
+    {
+        health += healingRate * Time.deltaTime;
+        health = Mathf.Clamp(health, 0, maxHealth);
+    }
+    public void FleeFromTarget()
+    {
+        Vector3 dir = (transform.position - Target.position).NoY();
+
+        dir = obstacleAvoidance.GetDir(dir);
+
+        Vector3 desired_velocity = dir.normalized * speed;
+        Vector3 steering = desired_velocity - currentSpeed;
+
+        currentSpeed += steering * Time.deltaTime;
+        currentSpeed = Vector3.ClampMagnitude(currentSpeed, speed);
+
+        Vector3 vel = currentSpeed;
+        vel.y = _rb.velocity.y;
+        _rb.velocity = vel;
+
+        Look(dir.NoY());
+    }
+    public bool IsAtHealingZone(Transform healingPoint, float threshold = 1.5f)
+    {
+        return Vector3.Distance(transform.position, healingPoint.position) <= threshold;
     }
 }

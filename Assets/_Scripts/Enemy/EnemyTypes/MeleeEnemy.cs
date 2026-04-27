@@ -10,7 +10,6 @@ public class MeleeEnemy : EnemyController
     QuestionNode rootNode;
     FSM meleeEnemyFsm;
 
-    public float meleeMaxHealth = 200f;
     public float attackRange = 2f;
     public float attackCooldown = 3f;
 
@@ -21,18 +20,17 @@ public class MeleeEnemy : EnemyController
     private EnemyMelee_PatrolState _patrolState;
     protected override void Awake()
     {
-
-        maxHealth = meleeMaxHealth;
         base.Awake();
 
         meleeEnemyFsm = new FSM();
-
 
         _idleState = new EnemyIdleState(this, idleDuration);// estos los creo para que el behaviour Tree los guarde de referencia y los cambie despues y asi la FSM no se entera de lo que esta pasando dentro del estado ni sus metodos(ni deberia).
         _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, iterationsBeforeRest);// lo mismo acá
 
         meleeEnemyFsm.RegisterState(EnemyStateType.Idle, _idleState);
         meleeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
+        meleeEnemyFsm.RegisterState(EnemyStateType.Flee, new EnemyFleeState(this, healingPoint));
+        meleeEnemyFsm.RegisterState(EnemyStateType.Heal, new EnemyHealState(this));
         meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown));
 
 
@@ -44,6 +42,8 @@ public class MeleeEnemy : EnemyController
         var patrol = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Patroll));
         var idle = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Idle));
         var chase = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Chase));
+        var flee = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Flee));
+        var heal = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Heal));
 
         meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
 
@@ -51,7 +51,11 @@ public class MeleeEnemy : EnemyController
         QuestionNode idleOrPatrol = new QuestionNode(IdleFinished, patrol, idle);
         QuestionNode notSeeingPlayer = new QuestionNode(PatrolNeedsRest, idleOrPatrol, patrol);
         QuestionNode canSee = new QuestionNode(IsTargetTracked, chase, notSeeingPlayer);
-        QuestionNode isAlive = new QuestionNode(IsAlive, canSee, respawning);
+
+        QuestionNode isHealed = new QuestionNode(IsHealed, canSee, heal);
+        QuestionNode reachedHealZone = new QuestionNode(() => IsAtHealingZone(healingPoint), isHealed, flee);
+        QuestionNode isLowHP = new QuestionNode(IsLowHP, reachedHealZone, canSee);
+        QuestionNode isAlive = new QuestionNode(IsAlive, isLowHP, respawning);
 
         rootNode = isAlive;
     }
@@ -62,9 +66,8 @@ public class MeleeEnemy : EnemyController
         rootNode.Execute();
         meleeEnemyFsm.Execute();
 
-        // Debug.Log(meleeEnemyFsm.CurrentState);
+        Debug.Log(meleeEnemyFsm.CurrentState);
     }
-
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
     public bool PatrolNeedsRest() => _patrolState != null && _patrolState.ShouldRest;
 
