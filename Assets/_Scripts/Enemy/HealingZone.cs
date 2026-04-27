@@ -13,7 +13,7 @@ public class HealingZone : MonoBehaviour
             EnemyController enemy = other.GetComponent<EnemyController>();
             if (enemy != null)
             {
-                enemy.Heal(healRate * Time.deltaTime);
+                enemy.Heal(healRate);
             }
         }
     }

@@ -15,7 +15,7 @@ public static class Extensions
         foreach (var elem in elemnens.Values)
             totalchances += elem;
         
-        float randomValue = Random.Range(0, totalchances);
+        float randomValue = Random.Range(0f, totalchances);
         foreach (var elem in elemnens)
         {
             randomValue -= elem.Value;

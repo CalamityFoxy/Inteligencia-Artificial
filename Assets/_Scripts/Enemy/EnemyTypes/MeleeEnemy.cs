@@ -1,9 +1,16 @@
+﻿
 
 
 
+using System.Collections.Generic;
 
-using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
+public enum CombatReaction
+{
+    Berserker,   // 30% este nunca se escapa
+    Normal,      // 45% al tener 25% se escapa
+    Coward       // 25% al perder 1/3 de su vida se las toma a curarse
+}
 
 public class MeleeEnemy : EnemyController
 {
@@ -18,6 +25,8 @@ public class MeleeEnemy : EnemyController
     public float idleDuration = 3f;
     private EnemyIdleState _idleState;
     private EnemyMelee_PatrolState _patrolState;
+    private CombatReaction _currentReaction;
+    private bool _hasRolledReaction = false;
     protected override void Awake()
     {
         base.Awake();
@@ -25,7 +34,7 @@ public class MeleeEnemy : EnemyController
         meleeEnemyFsm = new FSM();
 
         _idleState = new EnemyIdleState(this, idleDuration);// estos los creo para que el behaviour Tree los guarde de referencia y los cambie despues y asi la FSM no se entera de lo que esta pasando dentro del estado ni sus metodos(ni deberia).
-        _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, iterationsBeforeRest);// lo mismo ac�
+        _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, iterationsBeforeRest);// lo mismo acá
 
         meleeEnemyFsm.RegisterState(EnemyStateType.Idle, _idleState);
         meleeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
@@ -39,25 +48,39 @@ public class MeleeEnemy : EnemyController
         ActionNode attackPlayer = new ActionNode(AttackPlayer);
         ActionNode goBase = new ActionNode(returnToBase);
 
-        var patrol = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Patroll));
+       
         var idle = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Idle));
+        var patrol = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Patroll));
         var chase = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Chase));
         var flee = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Flee));
         var heal = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Heal));
 
-        meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
+        // aca decide que tipo de enemigo va ser cual lo ve al player
+        var chaseAfterRoll = new ActionNode(() =>
+        {
+            TryRollReaction();
+            meleeEnemyFsm.SetState(EnemyStateType.Chase);
+        });
 
-        //QuestionNode isFlagOnMe = new QuestionNode(IsFlagOnMe,goBase,)
+        
         QuestionNode idleOrPatrol = new QuestionNode(IdleFinished, patrol, idle);
         QuestionNode notSeeingPlayer = new QuestionNode(PatrolNeedsRest, idleOrPatrol, patrol);
-        QuestionNode canSee = new QuestionNode(IsTargetTracked, chase, notSeeingPlayer);
-
+        QuestionNode canSee = new QuestionNode(IsTargetTracked, chaseAfterRoll, notSeeingPlayer);
         QuestionNode isHealed = new QuestionNode(IsHealed, canSee, heal);
         QuestionNode reachedHealZone = new QuestionNode(() => IsAtHealingZone(healingPoint), isHealed, flee);
-        QuestionNode isLowHP = new QuestionNode(IsLowHP, reachedHealZone, canSee);
-        QuestionNode isAlive = new QuestionNode(IsAlive, isLowHP, respawning);
+        QuestionNode shouldFlee = new QuestionNode(ShouldFleeForHealing, reachedHealZone, canSee);
+
+ 
+        QuestionNode isAlive = new QuestionNode(IsAlive, shouldFlee, respawning);
 
         rootNode = isAlive;
+
+        meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
+
+        
+        
+
+       
     }
 
     protected override void Update()
@@ -65,11 +88,60 @@ public class MeleeEnemy : EnemyController
         base.Update();
         rootNode.Execute();
         meleeEnemyFsm.Execute();
+        if (!IsTargetTracked())
+        {
+            _hasRolledReaction = false;
+        }
 
         Debug.Log(meleeEnemyFsm.CurrentState);
     }
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
     public bool PatrolNeedsRest() => _patrolState != null && _patrolState.ShouldRest;
+    private CombatReaction RollCombatReaction()
+    {
+        var weights = new Dictionary<CombatReaction, float>
+        {
+            { CombatReaction.Berserker, 30f },
+            { CombatReaction.Normal,    45f },
+            { CombatReaction.Coward,    25f }
+        };
+
+        return Extensions.RouletteWheelSelection(weights);
+    }
+
+    private void TryRollReaction()
+    {
+        if (!_hasRolledReaction)
+        {
+            _currentReaction = RollCombatReaction();
+            _hasRolledReaction = true;
+            Debug.Log($"Roulette result: {_currentReaction} | {gameObject.name}");
+
+        }
+    }
+
+    public bool ShouldFleeForHealing()
+    {
+        if (!_hasRolledReaction) return false;
+
+        float threshold;
+
+        switch (_currentReaction)
+        {
+            case CombatReaction.Berserker:
+                return false;
+            case CombatReaction.Normal:
+                threshold = 0.25f;
+                break;
+            case CombatReaction.Coward:
+                threshold = 0.66f;
+                break;
+            default:
+                return false;
+        }
+
+        return Health <= maxHealth * threshold;
+    }
 
 
 }

@@ -222,7 +222,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     {
         health -= damage;
         Debug.Log(health);  
-        if (health < 0)
+        if (health <= 0)
         {
             gameObject.SetActive(false);
         }
