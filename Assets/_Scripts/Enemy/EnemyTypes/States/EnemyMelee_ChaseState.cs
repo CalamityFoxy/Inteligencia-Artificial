@@ -4,22 +4,36 @@ public class EnemyMelee_ChaseState : State
 {
     private EnemyController _enemy;
     private Transform target;
-
     private float attackRange;
     private float attackCooldown;
     private float attackTimer;
 
-    public EnemyMelee_ChaseState(EnemyController enemy, Transform target, float range, float cooldown)
+    
+    private GameObject weaponObject;
+    private Transform attackPivot;
+    private float attackSpeed = 320f;     
+    private float attackAngle = 180f;     
+    private float currentSwingAngle;
+    private bool isSwinging;
+
+    public EnemyMelee_ChaseState(EnemyController enemy, Transform target, float range, float cooldown, GameObject weapon, Transform pivot)
     {
         _enemy = enemy;
         this.target = target;
         attackRange = range;
         attackCooldown = cooldown;
+        weaponObject = weapon;
+        attackPivot = pivot;
     }
 
     public override void Enter()
     {
-        attackTimer = 0f;
+       
+        attackTimer = attackCooldown;
+
+        
+        if (weaponObject != null) weaponObject.SetActive(false);
+        isSwinging = false;
     }
 
     public override void Execute()
@@ -27,10 +41,15 @@ public class EnemyMelee_ChaseState : State
         attackTimer += Time.deltaTime;
 
         float distance = Vector3.Distance(target.position, _enemy.transform.position);
-
-        // Dirección hacia el target
         Vector3 dir = _enemy.LastKnownTargetPosition - _enemy.transform.position;
 
+       
+        if (isSwinging)
+        {
+            UpdateSwing();
+        }
+
+        
         if (distance > attackRange && _enemy.IsTargetInLos())
         {
             _enemy.MoveWithSteering(dir);
@@ -38,28 +57,51 @@ public class EnemyMelee_ChaseState : State
         }
         else
         {
-            // DETENERSE PARA ATACAR
+            
             _enemy.Stop();
             _enemy.Look(dir.NoY());
 
-            // ATACAR CON COOLDOWN
-            if (attackTimer >= attackCooldown)
+            if (attackTimer >= attackCooldown && !isSwinging)
             {
-                Attack();
+                StartAttack();
                 attackTimer = 0f;
             }
         }
     }
 
-    private void Attack()
+    private void StartAttack()
     {
         Debug.Log("Enemy attacks!");
 
-        // _enemy.Animator.SetTrigger("Attack");
+        if (weaponObject != null) weaponObject.SetActive(true);
+        isSwinging = true;
+        currentSwingAngle = 0f;
+
+      
+        attackPivot.rotation = _enemy.transform.rotation;
+        attackPivot.Rotate(Vector3.up, -attackAngle / 2f);
+    }
+
+    private void UpdateSwing()
+    {
+        float step = attackSpeed * Time.deltaTime;
+        currentSwingAngle += step;
+
+        attackPivot.Rotate(Vector3.up * step);
+
+        if (currentSwingAngle >= attackAngle)
+        {
+            
+            isSwinging = false;
+            attackPivot.localRotation = Quaternion.identity;
+            if (weaponObject != null) weaponObject.SetActive(false);
+        }
     }
 
     public override void Exit()
     {
         _enemy.Stop();
+        if (weaponObject != null) weaponObject.SetActive(false);
+        isSwinging = false;
     }
 }

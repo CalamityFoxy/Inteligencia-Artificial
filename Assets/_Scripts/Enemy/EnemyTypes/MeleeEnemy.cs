@@ -30,6 +30,9 @@ public class MeleeEnemy : EnemyController
     private CombatReaction _currentReaction;
     private bool _hasRolledReaction = false;
 
+
+    public GameObject weaponObject;
+    public Transform attackPivot;
     protected override void Awake()
     {
         base.Awake();
@@ -45,7 +48,7 @@ public class MeleeEnemy : EnemyController
         meleeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
         meleeEnemyFsm.RegisterState(EnemyStateType.Flee, new EnemyFleeState(this, healingPoint));
         meleeEnemyFsm.RegisterState(EnemyStateType.Heal, new EnemyHealState(this));
-        meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown));
+        meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown,weaponObject,attackPivot));
 
         // creamos los nodos que vamos a utilizar en el BT
         ActionNode respawning = new ActionNode(Respawn);

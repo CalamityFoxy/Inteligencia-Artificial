@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour, IFlagCarrier
+public class PlayerController : MonoBehaviour,  IDamageable
 {
     [Header("Movement")]
     public float walkSpeed;
@@ -26,6 +26,10 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
     [SerializeField] private Transform weapon;      
     [SerializeField] private float attackSpeed = 360f;
     [SerializeField] private float attackAngle = 180f;
+    [Header("Health")]                                  
+    [SerializeField] private float health;              
+    [SerializeField] private float maxHealth = 250f;    
+    [SerializeField] private Transform respawnPoint;
 
     private CharacterController controller;
     private Camera cam;
@@ -63,6 +67,8 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         {
             currentFlag.Drop(transform.position);
             ClearFlag();
+
+
         }
     }
 
@@ -72,6 +78,7 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         cam = Camera.main;
         stamina = maxStamina;
         weapon.gameObject.SetActive(false);
+        health = maxHealth;
     }
 
     void Update()
@@ -195,4 +202,47 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
             weapon.gameObject.SetActive(false);
         }
     }
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        Debug.Log($"Player HP: {health}");
+        if (health <= 0)
+        {
+            Dead();
+            Debug.Log("test");
+        }
+    }
+
+    public void Dead()
+    {
+        
+        health = 0;
+
+        
+        if (currentFlag != null)
+        {
+            currentFlag.Drop(transform.position);
+            ClearFlag();
+        }
+
+        
+        controller.enabled = false;
+        transform.position = new Vector3(0, -400, 0);
+        controller.enabled = true;
+
+        StartCoroutine(waitAndRespawn(3f));
+    }
+
+    private IEnumerator waitAndRespawn(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        
+        controller.enabled = false;
+        transform.position = respawnPoint.position;
+        controller.enabled = true;
+
+        health = maxHealth;
+    }
+    
 }

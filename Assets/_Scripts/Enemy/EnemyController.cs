@@ -21,8 +21,8 @@ public class EnemyController : MonoBehaviour, IDamageable
     protected float speedIdle = 3f;
 
     [Header("Perception")]
-    [SerializeField] private float perceptionInterval = 0.2f;
-    [SerializeField] private float loseSightDelay = 18f;
+    //[SerializeField] private float perceptionInterval = 0.2f;
+    [SerializeField] private float loseSightDelay = 3f;
 
     [Header("Vida")]
     [SerializeField] private float health;

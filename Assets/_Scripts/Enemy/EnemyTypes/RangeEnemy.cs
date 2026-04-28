@@ -29,7 +29,7 @@ public class RangeEnemy : EnemyController
         _patrolState = new EnemyMelee_PatrolState(this, patrollWaypoints, iterationsBeforeRest);
         rangeEnemyFsm.RegisterState(EnemyStateType.Idle, _idleState);
         rangeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
-        rangeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown));
+        rangeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyRange_ChaseState(this, Target, attackRange, attackCooldown));
         rangeEnemyFsm.RegisterState(EnemyStateType.Attack, new RangeEnemy_AttackState(this, Target, attackRange, attackCooldown, shootPosition));
         rangeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
 
