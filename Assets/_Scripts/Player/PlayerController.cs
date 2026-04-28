@@ -17,16 +17,26 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
     [Header("Rotation")]
     public LayerMask groundMask;
 
+    [Header("Flag Settings")]
+    [SerializeField] private Team team;
+    [SerializeField] private Transform holder;
+
+    [Header("Attack Settings")]
+    [SerializeField] private Transform attackPivot; 
+    [SerializeField] private Transform weapon;      
+    [SerializeField] private float attackSpeed = 360f;
+    [SerializeField] private float attackAngle = 180f;
+
     private CharacterController controller;
     private Camera cam;
     private float currentSpeed;
     private float stamina;
-
-    [Header("Flag Settings")]
-    [SerializeField] private Team team;
-    [SerializeField] private Transform holder;
     private bool isAlive = true;
     private Flag currentFlag;
+    private bool swingLeftToRight = true; 
+    private bool isAttacking;
+    private float currentAngle;
+    private int attackDirection = 1;
 
     public Transform FlagHolder => holder;
     public Transform Transform => transform;
@@ -34,17 +44,6 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
     public bool notDead => isAlive;
     public bool HasFlag => currentFlag != null;
     public Flag CurrentFlag => currentFlag;
-
-    [Header("Attack")]
-    [SerializeField] private Transform attackPivot; // empty en el centro
-    [SerializeField] private Transform weapon;      // cubo hijo del pivot
-    [SerializeField] private float attackSpeed = 360f;
-    [SerializeField] private float attackAngle = 180f;
-    private bool swingLeftToRight = true; // alterna dirección
-
-    private bool isAttacking;
-    private float currentAngle;
-    private int direction = 1;
 
     public void SetFlag(Flag flag)
     {
@@ -80,7 +79,6 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         HandleMovement();
         RotateToMouse();
         HandleStamina();
-
         HandleAttackInput();
 
         if (isAttacking)
@@ -156,23 +154,21 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
         isAttacking = true;
         currentAngle = 0f;
 
-        // Activar arma
         weapon.gameObject.SetActive(true);
 
-        // Alinear pivot con player
         attackPivot.rotation = transform.rotation;
 
         if (swingLeftToRight)
         {
             // empieza desde la izquierda (-90)
             attackPivot.Rotate(Vector3.up, -attackAngle / 2f);
-            direction = 1; // va hacia la derecha
+            attackDirection = 1; // va hacia la derecha
         }
         else
         {
             // empieza desde la derecha (+90)
             attackPivot.Rotate(Vector3.up, attackAngle / 2f);
-            direction = -1; // va hacia la izquierda
+            attackDirection = -1; // va hacia la izquierda
         }
 
         // alternar para el próximo click
@@ -182,7 +178,7 @@ public class PlayerController : MonoBehaviour, IFlagCarrier
     void UpdateAttack()
     {
         float step = attackSpeed * Time.deltaTime;
-        float delta = step * direction;
+        float delta = step * attackDirection;
 
         currentAngle += Mathf.Abs(delta);
 

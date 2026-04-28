@@ -14,19 +14,22 @@ public enum CombatReaction
 
 public class MeleeEnemy : EnemyController
 {
-    QuestionNode rootNode;
-    FSM meleeEnemyFsm;
-
+    [Header("Attack Settings")]
     public float attackRange = 2f;
     public float attackCooldown = 3f;
 
+    [Header("Patroll Settings")]
     public Transform[] patrolWaypoints;
     public int iterationsBeforeRest = 4;
     public float idleDuration = 3f;
+
+    QuestionNode rootNode;
+    FSM meleeEnemyFsm;
     private EnemyIdleState _idleState;
     private EnemyMelee_PatrolState _patrolState;
     private CombatReaction _currentReaction;
     private bool _hasRolledReaction = false;
+
     protected override void Awake()
     {
         base.Awake();
@@ -50,7 +53,6 @@ public class MeleeEnemy : EnemyController
         ActionNode attackPlayer = new ActionNode(AttackPlayer);
         ActionNode goBase = new ActionNode(returnToBase);
 
-       
         var idle = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Idle));
         var patrol = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Patroll));
         var chase = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Chase));
@@ -75,16 +77,9 @@ public class MeleeEnemy : EnemyController
 
         QuestionNode isAlive = new QuestionNode(IsAlive, shouldFlee, respawning);
 
-        
-
         rootNode = isAlive;
 
         meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll); // seteamos el estado default a patrullar
-
-        
-        
-
-       
     }
 
     protected override void Update()
@@ -97,14 +92,12 @@ public class MeleeEnemy : EnemyController
         if (!IsTargetTracked())
         { 
             _hasRolledReaction = false;   
-
         }
 
-        Debug.Log(meleeEnemyFsm.CurrentState);
+        //Debug.Log(meleeEnemyFsm.CurrentState);
     }
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
     public bool PatrolNeedsRest() => _patrolState != null && _patrolState.ShouldRest;
-
 
     // función  que determina el % de que salgan cada uno en Wheel Roulette.
     private CombatReaction RollCombatReaction()
@@ -118,8 +111,8 @@ public class MeleeEnemy : EnemyController
 
         return Extensions.RouletteWheelSelection(weights);
     }
-    //la ejecutamos 
-    private void TryRollReaction()
+
+    private void TryRollReaction()   // La ejecutamos 
     {
         if (!_hasRolledReaction)
         {

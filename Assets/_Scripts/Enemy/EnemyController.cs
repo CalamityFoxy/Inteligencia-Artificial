@@ -29,22 +29,18 @@ public class EnemyController : MonoBehaviour, IDamageable
     [SerializeField] protected float maxHealth;
     [SerializeField] protected Transform healingPoint;
 
+
     [Header("ObstacleAvoidance")]
     [SerializeField] private float obstacleAvoidanceRadius;
     [SerializeField] private float obstacleAvoidanceAngle;
     [SerializeField] private float obstacleAvoidancePersonalArea;
     [SerializeField] private LayerMask obstacleAvoidanceMask;
     [SerializeField] private Collider[] obstacleAvoidanceColliders;
-
-    [Header("References")]
-    public Transform homePoint;
-
     public bool CanSeeTarget { get; private set; }
-    private bool _hasEverSeenTarget = false;
-
     public Vector3 LastKnownTargetPosition { get; private set; }
     public float Health { get => health; set => health = value; }
 
+    private bool _hasEverSeenTarget = false;
     private ObstacleAvoidance obstacleAvoidance;
     private Rigidbody _rb;
     private float _perceptionTimer;
@@ -55,6 +51,7 @@ public class EnemyController : MonoBehaviour, IDamageable
         health = maxHealth;
 
         _rb = GetComponent<Rigidbody>();
+
         obstacleAvoidance = new ObstacleAvoidance(
        transform,
        obstacleAvoidanceRadius,
@@ -70,14 +67,12 @@ public class EnemyController : MonoBehaviour, IDamageable
     }
 
 
-    public bool IsTargetInLos()
+    public bool IsTargetInLos() // Comprueba si el target está en línea de visión, utilizando el sistema de Line of Sight
     {
         if (los.CheckView(Target) && los.CheckAngle(Target) && los.CheckRange(Target)) return true; else return false;
     }
 
-    public void AttackPlayer()
-    {
-    }
+    public void AttackPlayer() { }
     public bool IsTargetTracked() => !ShouldLoseTarget();
     public bool IsFlagHome() { return true; }
     public bool IsFlagOnMe() { return false; }
@@ -85,15 +80,9 @@ public class EnemyController : MonoBehaviour, IDamageable
     public bool IsAlive() => health > 0;
     public void Respawn() { }
     public void SearchFlag() { }
+    public void returnToBase() { }
 
-    public void returnToBase()
-    {
-
-    }
-    public bool IsMelee() { return true; }
-
-
-    private void UpdatePerception()
+    private void UpdatePerception() // Actualiza la percepción del enemigo, comprobando si puede ver al target y actualizando la última posición conocida
     {
         CanSeeTarget =
             los.CheckRange(Target) &&
@@ -123,7 +112,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     }
 
 
-    public void Move(Vector3 dir)
+    public void Move(Vector3 dir)  // Movimiento directo, sin steering, pero teniendo en cuenta el obstacle avoidance para no chocar contra paredes
     {
         dir = obstacleAvoidance.GetDir(dir, false);
         dir.y = 0f;
@@ -137,7 +126,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     }
 
 
-    public void MoveWithSteering(Vector3 dir)
+    public void MoveWithSteering(Vector3 dir)  // Utiliza el steering para moverse, teniendo en cuenta el obstacle avoidance
     {
         dir = obstacleAvoidance.GetDir(dir).NoY();
 
@@ -166,17 +155,14 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     private void OnDrawGizmosSelected()
     {
-        // Color base
         Gizmos.color = Color.yellow;
 
         // Radio de avoidance
         Gizmos.DrawWireSphere(transform.position, obstacleAvoidanceRadius);
 
-        // Área personal (más chica)
+        // Área personal 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, obstacleAvoidancePersonalArea);
-
-
 
         // Ángulo de detección
         Gizmos.color = Color.cyan;
@@ -190,7 +176,7 @@ public class EnemyController : MonoBehaviour, IDamageable
         Gizmos.DrawLine(transform.position, transform.position + leftDir * obstacleAvoidanceRadius);
         Gizmos.DrawLine(transform.position, transform.position + rightDir * obstacleAvoidanceRadius);
 
-        // Arco visual (opcional pero útil)
+        // Arco visual 
         int segments = 20;
         Vector3 prevPoint = transform.position + leftDir * obstacleAvoidanceRadius;
 
@@ -205,7 +191,7 @@ public class EnemyController : MonoBehaviour, IDamageable
             prevPoint = nextPoint;
         }
 
-        // Colliders detectados (si los usás)
+        // Colliders detectados 
         if (obstacleAvoidanceColliders != null)
         {
             Gizmos.color = Color.magenta;
@@ -221,7 +207,6 @@ public class EnemyController : MonoBehaviour, IDamageable
     public void TakeDamage(float damage)
     {
         health -= damage;
-        Debug.Log(health);  
         if (health <= 0)
         {
             gameObject.SetActive(false);
@@ -242,7 +227,7 @@ public class EnemyController : MonoBehaviour, IDamageable
         health += healingRate * Time.deltaTime;
         health = Mathf.Clamp(health, 0, maxHealth);
     }
-    public void FleeFromTarget()
+    public void FleeFromTarget()  // Flee del target, utilizando object avoidance 
     {
         Vector3 dir = (transform.position - Target.position).NoY();
 

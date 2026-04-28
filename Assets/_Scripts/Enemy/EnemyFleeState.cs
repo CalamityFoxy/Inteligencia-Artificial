@@ -19,7 +19,7 @@ public class EnemyFleeState : State
     {
         float distToPlayer = Vector3.Distance(_enemy.transform.position, _enemy.Target.position);
 
-        if (distToPlayer < 5f)
+        if (distToPlayer < 8f)
         {
             // huye del jugador
             _enemy.FleeFromTarget();
