@@ -8,7 +8,6 @@ public class BaseZone : MonoBehaviour
     {
         var carrier = other.GetComponent<IFlagCarrier>();
         if (carrier == null) return;
-        if (!carrier.notDead) return;
 
         var player = other.GetComponent<PlayerController>();
         if (player == null || !player.HasFlag) return;

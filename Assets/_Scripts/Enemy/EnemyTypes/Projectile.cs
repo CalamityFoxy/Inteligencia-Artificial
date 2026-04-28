@@ -3,6 +3,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     public float speed;
+    public float damageAmount;
     public float lifeTime;
 
     private Vector3 direction;
@@ -20,6 +21,8 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        var damageable = other.GetComponent<IDamageable>();
+        if (damageable != null) { damageable.TakeDamage(damageAmount); }
         Destroy(gameObject);
     }
 }

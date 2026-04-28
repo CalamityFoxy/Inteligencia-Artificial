@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour,  IDamageable
+public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
 {
     [Header("Movement")]
     public float walkSpeed;
@@ -51,25 +51,14 @@ public class PlayerController : MonoBehaviour,  IDamageable
 
     public void SetFlag(Flag flag)
     {
-        currentFlag = flag;
+        currentFlag = flag; 
+        flag.transform.SetParent(holder);
+        flag.transform.SetPositionAndRotation(holder.position, holder.rotation);
     }
 
     public void ClearFlag()
     {
         currentFlag = null;
-    }
-
-    public void Die()
-    {
-        isAlive = false;
-
-        if (currentFlag != null)
-        {
-            currentFlag.Drop(transform.position);
-            ClearFlag();
-
-
-        }
     }
 
     void Awake()
@@ -209,31 +198,28 @@ public class PlayerController : MonoBehaviour,  IDamageable
         if (health <= 0)
         {
             Dead();
-            Debug.Log("test");
+            Debug.Log("Respawning in 3 seconds...");
         }
     }
 
     public void Dead()
     {
-        
         health = 0;
+        isAlive = false;
 
-        
         if (currentFlag != null)
         {
             currentFlag.Drop(transform.position);
-            ClearFlag();
         }
-
         
         controller.enabled = false;
         transform.position = new Vector3(0, -400, 0);
         controller.enabled = true;
 
-        StartCoroutine(waitAndRespawn(3f));
+        StartCoroutine(WaitAndRespawn(3f));
     }
 
-    private IEnumerator waitAndRespawn(float delay)
+    private IEnumerator WaitAndRespawn(float delay)
     {
         yield return new WaitForSeconds(delay);
 

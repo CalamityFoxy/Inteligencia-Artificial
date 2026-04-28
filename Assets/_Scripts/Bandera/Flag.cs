@@ -11,6 +11,8 @@ public class Flag : MonoBehaviour
     [Header("Configuration")]
     [SerializeField] private Team ownerTeam;
     [SerializeField] private Transform homePoint;
+
+    Vector3 startRotation;
     Collider grabTrigger;
     public Team OwnerTeam => ownerTeam;
     public FlagState State { get; private set; } = FlagState.Home;
@@ -20,22 +22,13 @@ public class Flag : MonoBehaviour
     {
         grabTrigger = GetComponent<Collider>();
         grabTrigger.enabled = true;
-    }
-
-    private void Update()
-    {
-
-        if (State == FlagState.Carried && Carrier != null && !Carrier.notDead)
-        {
-            Drop(Carrier.Transform.position);
-        }
+        startRotation = transform.rotation.eulerAngles;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         var carrier = other.GetComponent<IFlagCarrier>();
         if (carrier == null) return;
-        if (!carrier.notDead) return;
         if (State == FlagState.Carried) return;
         if (carrier.Team == ownerTeam && State != FlagState.Dropped) return;
 
@@ -48,17 +41,16 @@ public class Flag : MonoBehaviour
         grabTrigger.enabled = false;
         carrier.SetFlag(this);
         State = FlagState.Carried;
-        transform.SetParent(carrier.FlagHolder);
     }
 
     public void Drop(Vector3 position)
     {
-        Carrier = null;
-        State = FlagState.Dropped;
-
         Carrier?.ClearFlag();
+        Carrier = null;
         transform.SetParent(null);
-        transform.position = position;
+        transform.SetPositionAndRotation(position, Quaternion.Euler(startRotation));
+        State = FlagState.Dropped;
+        grabTrigger.enabled = true;
     }
 
     public void ReturnHome()

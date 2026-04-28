@@ -151,7 +151,7 @@ public class EnemyController : MonoBehaviour, IDamageable
         currentSpeed = Vector3.ClampMagnitude(currentSpeed, speed); // que no se dispare
 
         Vector3 vel = currentSpeed;
-        vel.y = _rb.velocity.y;
+        vel.y = 0;
         _rb.velocity = vel;
     }
 

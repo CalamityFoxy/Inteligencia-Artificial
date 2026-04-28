@@ -1009,7 +1009,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 819335242}
-  - {fileID: 1195685341}
   - {fileID: 1047825036}
   - {fileID: 1043009639}
   - {fileID: 219081995}
@@ -1579,7 +1578,7 @@ MonoBehaviour:
   loseSightDelay: 6
   health: 100
   maxHealth: 100
-  healingPoint: {fileID: 772195305}
+  healingPoint: {fileID: 747858152}
   obstacleAvoidanceRadius: 3
   obstacleAvoidanceAngle: 100
   obstacleAvoidancePersonalArea: 1
@@ -1639,7 +1638,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 84
   m_CollisionDetection: 0
 --- !u!136 &717104337
 CapsuleCollider:
@@ -2451,6 +2450,75 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 469782873}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &821590448
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 821590451}
+  - component: {fileID: 821590450}
+  - component: {fileID: 821590449}
+  m_Layer: 0
+  m_Name: RedFlag
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &821590449
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821590448}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.33414167, y: 1, z: 0.3641739}
+  m_Center: {x: -0.13528737, y: 0, z: -0.24965477}
+--- !u!114 &821590450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821590448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48c4f427db3953f48917eded9aad7f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownerTeam: 1
+  homePoint: {fileID: 1043009639}
+--- !u!4 &821590451
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821590448}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.1603756, y: 1.4382298, z: 26.388823}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1195685341}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &834328599
 GameObject:
@@ -3678,10 +3746,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1195685341}
-  - component: {fileID: 1195685343}
-  - component: {fileID: 1195685342}
   m_Layer: 0
-  m_Name: RedFlag
+  m_Name: Flag
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3696,49 +3762,14 @@ Transform:
   m_GameObject: {fileID: 1195685340}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.5755742, y: 6.859062, z: 4.17412}
+  m_LocalPosition: {x: -3.81, y: 3.063691, z: -3.4899998}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1855203237}
   - {fileID: 1568558958}
-  m_Father: {fileID: 469782873}
+  m_Father: {fileID: 821590451}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &1195685342
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1195685340}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.44, y: 2.61, z: 2.78}
-  m_Center: {x: 3.81, y: -3.33, z: 3.49}
---- !u!114 &1195685343
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1195685340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48c4f427db3953f48917eded9aad7f04, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ownerTeam: 1
-  homePoint: {fileID: 1043009639}
 --- !u!1 &1225743068
 GameObject:
   m_ObjectHideFlags: 0
@@ -4759,7 +4790,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -5239,7 +5270,7 @@ MonoBehaviour:
   loseSightDelay: 1.5
   health: 100
   maxHealth: 100
-  healingPoint: {fileID: 772195305}
+  healingPoint: {fileID: 747858152}
   obstacleAvoidanceRadius: 3
   obstacleAvoidanceAngle: 100
   obstacleAvoidancePersonalArea: 1
@@ -5304,7 +5335,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 84
   m_CollisionDetection: 0
 --- !u!23 &1615603521
 MeshRenderer:
@@ -6418,7 +6449,7 @@ MonoBehaviour:
   loseSightDelay: 1.5
   health: 100
   maxHealth: 100
-  healingPoint: {fileID: 772195305}
+  healingPoint: {fileID: 747858152}
   obstacleAvoidanceRadius: 3
   obstacleAvoidanceAngle: 100
   obstacleAvoidancePersonalArea: 1
@@ -6461,7 +6492,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 84
   m_CollisionDetection: 0
 --- !u!1 &1855203236
 GameObject:
@@ -6512,7 +6543,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -7263,7 +7294,7 @@ MonoBehaviour:
   loseSightDelay: 6
   health: 100
   maxHealth: 100
-  healingPoint: {fileID: 772195305}
+  healingPoint: {fileID: 747858152}
   obstacleAvoidanceRadius: 3
   obstacleAvoidanceAngle: 100
   obstacleAvoidancePersonalArea: 1
@@ -7323,7 +7354,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 84
   m_CollisionDetection: 0
 --- !u!136 &2059826236
 CapsuleCollider:
@@ -7658,7 +7689,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 84
   m_CollisionDetection: 0
 --- !u!114 &2089203342
 MonoBehaviour:
@@ -7679,7 +7710,7 @@ MonoBehaviour:
   loseSightDelay: 6
   health: 100
   maxHealth: 100
-  healingPoint: {fileID: 772195305}
+  healingPoint: {fileID: 747858152}
   obstacleAvoidanceRadius: 3
   obstacleAvoidanceAngle: 100
   obstacleAvoidancePersonalArea: 1
@@ -7752,13 +7783,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2138244950}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.2001202, y: 0.58684593, z: -0.042239252, w: 0.78344095}
-  m_LocalPosition: {x: -0.961, y: 0, z: 0.428}
+  m_LocalRotation: {x: -0, y: 0.17047606, z: -0, w: 0.9853618}
+  m_LocalPosition: {x: 0.098, y: 0, z: -0.475}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1903174447}
-  m_LocalEulerAnglesHint: {x: -15.307, y: 76.135, z: -18.188}
+  m_LocalEulerAnglesHint: {x: 0, y: 19.631, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -7773,3 +7804,4 @@ SceneRoots:
   - {fileID: 469782873}
   - {fileID: 657728122}
   - {fileID: 143041359}
+  - {fileID: 821590451}
