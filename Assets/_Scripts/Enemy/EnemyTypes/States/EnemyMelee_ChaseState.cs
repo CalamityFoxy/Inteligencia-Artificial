@@ -55,7 +55,6 @@ public class EnemyMelee_ChaseState : State
     {
         Debug.Log("Enemy attacks!");
 
-
         // _enemy.Animator.SetTrigger("Attack");
     }
 

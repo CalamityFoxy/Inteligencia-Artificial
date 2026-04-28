@@ -1,19 +1,19 @@
 
 using System;
-
+using System.Collections;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
 public interface IDamageable
 {
     void TakeDamage(float damage);
+    void Dead();
 }
 public class EnemyController : MonoBehaviour, IDamageable
 {
     [Header("References")]
     public Transform Target;
     public LIneOfSight los;
-
 
     [Header("Movement")]
     public float speed;
@@ -78,7 +78,21 @@ public class EnemyController : MonoBehaviour, IDamageable
     public bool IsFlagOnMe() { return false; }
     public bool IsFlagDropped() { return false; }
     public bool IsAlive() => health > 0;
-    public void Respawn() { }
+    public void Respawn() { ; }
+
+    public void Dead()
+    {
+        health = 0;
+        transform.position = new Vector3(0, -100, 0);
+        StartCoroutine(waitAndRespawn(3.5f));
+    }
+    private IEnumerator waitAndRespawn(float delay)
+    {
+        Debug.Log("Respawning in " + delay + " seconds...");
+        yield return new WaitForSeconds(delay);
+        health = maxHealth;
+        transform.position = healingPoint.position;
+    }
     public void SearchFlag() { }
     public void returnToBase() { }
 
@@ -151,6 +165,53 @@ public class EnemyController : MonoBehaviour, IDamageable
         if (dir != Vector3.zero)
             transform.forward = dir;
     }
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        if (health <= 0)
+        {
+            Dead();
+        }
+    }
+    public bool IsLowHP()
+    {
+        return health <= maxHealth * 0.35f;
+    }
+
+    public bool IsHealed()
+    {
+        return health >= maxHealth * 0.9f;
+    }
+
+    public void Heal(float healingRate)
+    {
+        health += healingRate * Time.deltaTime;
+        health = Mathf.Clamp(health, 0, maxHealth);
+    }
+
+    public void FleeFromTarget()  // Flee del target, utilizando object avoidance 
+    {
+        Vector3 dir = (transform.position - Target.position).NoY();
+
+        dir = obstacleAvoidance.GetDir(dir);
+
+        Vector3 desired_velocity = dir.normalized * speed;
+        Vector3 steering = desired_velocity - currentSpeed;
+
+        currentSpeed += steering * Time.deltaTime;
+        currentSpeed = Vector3.ClampMagnitude(currentSpeed, speed);
+
+        Vector3 vel = currentSpeed;
+        vel.y = _rb.velocity.y;
+        _rb.velocity = vel;
+
+        Look(dir.NoY());
+    }
+
+    public bool IsAtHealingZone(Transform healingPoint, float threshold = 1.5f)
+    {
+        return Vector3.Distance(transform.position, healingPoint.position) <= threshold;
+    }
 
 
     private void OnDrawGizmosSelected()
@@ -204,49 +265,5 @@ public class EnemyController : MonoBehaviour, IDamageable
         }
     }
 
-    public void TakeDamage(float damage)
-    {
-        health -= damage;
-        if (health <= 0)
-        {
-            gameObject.SetActive(false);
-        }
-    }
-    public bool IsLowHP()
-    {
-        return health <= maxHealth * 0.35f;
-    }
-
-    public bool IsHealed()
-    {
-        return health >= maxHealth * 0.9f;
-    }
-
-    public void Heal(float healingRate)
-    {
-        health += healingRate * Time.deltaTime;
-        health = Mathf.Clamp(health, 0, maxHealth);
-    }
-    public void FleeFromTarget()  // Flee del target, utilizando object avoidance 
-    {
-        Vector3 dir = (transform.position - Target.position).NoY();
-
-        dir = obstacleAvoidance.GetDir(dir);
-
-        Vector3 desired_velocity = dir.normalized * speed;
-        Vector3 steering = desired_velocity - currentSpeed;
-
-        currentSpeed += steering * Time.deltaTime;
-        currentSpeed = Vector3.ClampMagnitude(currentSpeed, speed);
-
-        Vector3 vel = currentSpeed;
-        vel.y = _rb.velocity.y;
-        _rb.velocity = vel;
-
-        Look(dir.NoY());
-    }
-    public bool IsAtHealingZone(Transform healingPoint, float threshold = 1.5f)
-    {
-        return Vector3.Distance(transform.position, healingPoint.position) <= threshold;
-    }
+ 
 }
