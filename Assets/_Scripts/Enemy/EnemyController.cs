@@ -299,7 +299,11 @@ public class EnemyController : MonoBehaviour, IDamageable
                     Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
             }
         }
+
+
     }
+
+
 
  
 }

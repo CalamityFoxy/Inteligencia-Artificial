@@ -3,8 +3,9 @@ using UnityEngine;
 public class EnemySearchState : State
 {
     private EnemyController _enemy;
-    private float recalcInterval;   // cada cuánto recalcula el path
+    private float recalcInterval;
     private float recalcTimer;
+    private Vector3 lastDestination;   // ? guardo el último destino calculado
 
     public EnemySearchState(EnemyController enemy, float recalcInterval = 1f)
     {
@@ -14,8 +15,8 @@ public class EnemySearchState : State
 
     public override void Enter()
     {
-        
-        _enemy.CalculatePathTo(_enemy.LastKnownTargetPosition);
+        lastDestination = _enemy.LastKnownTargetPosition;
+        _enemy.CalculatePathTo(lastDestination);
         recalcTimer = 0f;
     }
 
@@ -23,14 +24,17 @@ public class EnemySearchState : State
     {
         recalcTimer += Time.deltaTime;
 
-        // Recalculo cada X segundos 
         if (recalcTimer >= recalcInterval)
         {
-            _enemy.CalculatePathTo(_enemy.LastKnownTargetPosition);
+            // Solo recalculo si el destino cambió de forma significativa
+            if (Vector3.Distance(lastDestination, _enemy.LastKnownTargetPosition) > 1f)
+            {
+                lastDestination = _enemy.LastKnownTargetPosition;
+                _enemy.CalculatePathTo(lastDestination);
+            }
             recalcTimer = 0f;
         }
 
-        // Sigo el camino nodo por nodo. Move ya aplica obstacle avoidance internamente.
         _enemy.FollowCurrentPath();
     }
 
