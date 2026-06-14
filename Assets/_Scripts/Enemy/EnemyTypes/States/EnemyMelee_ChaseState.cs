@@ -8,7 +8,6 @@ public class EnemyMelee_ChaseState : State
     private float attackCooldown;
     private float attackTimer;
 
-
     private GameObject weaponObject;
     private Transform attackPivot;
     private float attackSpeed = 320f;
@@ -16,7 +15,6 @@ public class EnemyMelee_ChaseState : State
     private float currentSwingAngle;
     private bool isSwinging;
 
-    private bool pathCalculated = false;
     public EnemyMelee_ChaseState(EnemyController enemy, Transform target, float range, float cooldown, GameObject weapon, Transform pivot)
     {
         _enemy = enemy;
@@ -29,10 +27,7 @@ public class EnemyMelee_ChaseState : State
 
     public override void Enter()
     {
-
-        attackTimer = attackCooldown;
-
-
+        attackTimer = attackCooldown; // listo para atacar al instante al entrar a rango
         if (weaponObject != null) weaponObject.SetActive(false);
         isSwinging = false;
     }
@@ -41,67 +36,40 @@ public class EnemyMelee_ChaseState : State
     {
         attackTimer += Time.deltaTime;
 
+       
         float distance = Vector3.Distance(target.position, _enemy.transform.position);
-        Vector3 dir = _enemy.LastKnownTargetPosition - _enemy.transform.position;
+        Vector3 dir = (target.position - _enemy.transform.position).NoY();
 
         if (isSwinging)
         {
             UpdateSwing();
         }
 
-
-        if (_enemy.IsTargetInLos())
+        if (distance > attackRange)
         {
-            pathCalculated = false;
-
-            if (distance > attackRange)
-            {
-                _enemy.MoveWithSteering(dir.NoY());
-                _enemy.Look(dir);
-            }
-            else
-            {
-                _enemy.Stop();
-
-                if (attackTimer >= attackCooldown)
-                {
-                    Attack();
-                    attackTimer = 0f;
-                }
-            }
+            // Fuera de rango: persigo con steering (Pursuit/Seek)
+            _enemy.MoveWithSteering(dir);
+            _enemy.Look(dir);
         }
         else
         {
-
+            // A rango: me detengo y ataco con cooldown
             _enemy.Stop();
-            _enemy.Look(dir.NoY());
-
+            _enemy.Look(dir);
             if (attackTimer >= attackCooldown && !isSwinging)
             {
-                StartAttack();
+                Attack();
                 attackTimer = 0f;
-                // Perdió la vision usa A*
-                if (!pathCalculated && !_enemy.ShouldLoseTarget())
-                {
-                    _enemy.CalculatePathTo(_enemy.LastKnownTargetPosition);
-                    pathCalculated = true;
-                }
-
-                _enemy.FollowCurrentPath();
             }
         }
     }
 
-    private void StartAttack() { }
     private void Attack()
     {
         Debug.Log("Enemy attacks!");
-
         if (weaponObject != null) weaponObject.SetActive(true);
         isSwinging = true;
         currentSwingAngle = 0f;
-
-
         attackPivot.rotation = _enemy.transform.rotation;
         attackPivot.Rotate(Vector3.up, -attackAngle / 2f);
     }
@@ -110,12 +78,9 @@ public class EnemyMelee_ChaseState : State
     {
         float step = attackSpeed * Time.deltaTime;
         currentSwingAngle += step;
-
         attackPivot.Rotate(Vector3.up * step);
-
         if (currentSwingAngle >= attackAngle)
         {
-
             isSwinging = false;
             attackPivot.localRotation = Quaternion.identity;
             if (weaponObject != null) weaponObject.SetActive(false);

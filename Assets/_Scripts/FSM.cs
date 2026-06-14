@@ -9,7 +9,8 @@ public enum EnemyStateType
     Patroll,
     ReturnToBase,
     Flee,
-    Heal
+    Heal,
+    Search
 }
 
 public class FSM

@@ -194,11 +194,11 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
     public void TakeDamage(float damage)
     {
         health -= damage;
-        Debug.Log($"Player HP: {health}");
+        //Debug.Log($"Player HP: {health}");
         if (health <= 0)
         {
             Dead();
-            Debug.Log("Respawning in 3 seconds...");
+           // Debug.Log("Respawning in 3 seconds...");
         }
     }
 

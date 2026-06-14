@@ -171,21 +171,25 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     public bool FollowCurrentPath()
     {
+        
         if (currentPath == null || currentPathIndex >= currentPath.Count)
-            return true; 
-
-        WaypointNode node = currentPath[currentPathIndex];
-
-        Vector3 dir = node.transform.position - transform.position;
-
-        Move(dir.NoY()); 
-
-        if (dir.magnitude < 1f)
         {
-            currentPathIndex++;
+            Stop();
+            return true;
         }
 
-        return currentPathIndex >= currentPath.Count;
+        WaypointNode node = currentPath[currentPathIndex];
+        Vector3 dir = node.transform.position - transform.position;
+
+        
+        if (dir.NoY().magnitude < 1f)
+        {
+            currentPathIndex++;
+            return currentPathIndex >= currentPath.Count;
+        }
+
+        Move(dir.NoY());
+        return false;
     }
     public void Stop()
     {

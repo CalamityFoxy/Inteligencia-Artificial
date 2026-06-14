@@ -21,6 +21,9 @@ public class MeleeEnemy : EnemyController
     public int iterationsBeforeRest = 4;
     public float idleDuration = 3f;
 
+    [Header("Patrol")]
+    public List<WaypointNode> patrolWaypoints;
+
     QuestionNode rootNode;
     FSM meleeEnemyFsm;
     private EnemyIdleState _idleState;
@@ -38,7 +41,8 @@ public class MeleeEnemy : EnemyController
         meleeEnemyFsm = new FSM();
 
         _idleState = new EnemyIdleState(this, idleDuration);// estos los creo para que el behaviour Tree los guarde de referencia y los cambie despues y asi la FSM no se entera de lo que esta pasando dentro del estado ni sus metodos(ni deberia).
-        _patrolState = new EnemyMelee_PatrolState(this, currentPath, pathfinder, iterationsBeforeRest);// lo mismo acá
+        _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, pathfinder, iterationsBeforeRest);// lo mismo acá
+
 
 
         //registramos los estados en la fsm
@@ -47,6 +51,7 @@ public class MeleeEnemy : EnemyController
         meleeEnemyFsm.RegisterState(EnemyStateType.Flee, new EnemyFleeState(this, healingPoint));
         meleeEnemyFsm.RegisterState(EnemyStateType.Heal, new EnemyHealState(this));
         meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown,weaponObject,attackPivot));
+        meleeEnemyFsm.RegisterState(EnemyStateType.Search, new EnemySearchState(this));
 
         // creamos los nodos que vamos a utilizar en el BT
         ActionNode respawning = new ActionNode(Respawn);
@@ -59,6 +64,7 @@ public class MeleeEnemy : EnemyController
         var chase = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Chase));
         var flee = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Flee));
         var heal = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Heal));
+        var search = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Search));
 
         // aca decide que tipo de enemigo va ser cual lo ve al player
         var chaseAfterRoll = new ActionNode(() =>
@@ -70,7 +76,8 @@ public class MeleeEnemy : EnemyController
         // creamos el recorrido del BT, de raiz al ultimo
         QuestionNode idleOrPatrol = new QuestionNode(IdleFinished, patrol, idle);
         QuestionNode notSeeingPlayer = new QuestionNode(PatrolNeedsRest, idleOrPatrol, patrol);
-        QuestionNode canSee = new QuestionNode(IsTargetTracked, chaseAfterRoll, notSeeingPlayer);
+        QuestionNode seeOrSearch = new QuestionNode(() => CanSeeTarget, chaseAfterRoll, search);
+        QuestionNode canSee = new QuestionNode(IsTargetTracked, seeOrSearch, notSeeingPlayer);
         QuestionNode isHealed = new QuestionNode(IsHealed, canSee, heal);
         QuestionNode reachedHealZone = new QuestionNode(() => IsAtHealingZone(healingPoint), isHealed, flee);
         QuestionNode shouldFlee = new QuestionNode(ShouldFleeForHealing, reachedHealZone, canSee);
@@ -95,7 +102,7 @@ public class MeleeEnemy : EnemyController
             _hasRolledReaction = false;   
         }
 
-        //Debug.Log(meleeEnemyFsm.CurrentState);
+        Debug.Log(meleeEnemyFsm.CurrentState);
     }
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
     public bool PatrolNeedsRest() => _patrolState != null && _patrolState.ShouldRest;
