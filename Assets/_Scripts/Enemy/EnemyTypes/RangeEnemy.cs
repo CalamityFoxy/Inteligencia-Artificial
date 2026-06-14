@@ -6,7 +6,6 @@ public class RangeEnemy : EnemyController
     QuestionNode rootNode;
     FSM rangeEnemyFsm;
     [Header("Patroll Settings")]
-    public Transform[] patrollWaypoints;
     public int iterationsBeforeRest = 4;
     public float idleDuration = 3f;
 
@@ -26,7 +25,7 @@ public class RangeEnemy : EnemyController
 
         // Creacion y registro de estados
         _idleState = new EnemyIdleState(this, idleDuration);
-        _patrolState = new EnemyMelee_PatrolState(this, patrollWaypoints, iterationsBeforeRest);
+        _patrolState = new EnemyMelee_PatrolState(this, currentPath, pathfinder, iterationsBeforeRest);
         rangeEnemyFsm.RegisterState(EnemyStateType.Idle, _idleState);
         rangeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
         rangeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyRange_ChaseState(this, Target, attackRange, attackCooldown));

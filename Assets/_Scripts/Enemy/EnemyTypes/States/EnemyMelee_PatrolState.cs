@@ -1,21 +1,27 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyMelee_PatrolState : State
 {
     private EnemyController _enemy;
-    [SerializeField] private Transform[] waypoints;
+    private List<WaypointNode> waypoints;
     private int currentWaypoint = 0;
-    private int direction = 1;         
+    private int direction = 1;
     private float waypointTolerance = 1.5f;
 
-    
+    private List<WaypointNode> currentPath;
+    private int currentPathIndex;
+
+    private AStarPathfinder pathfinder;
+
     private int patrolIterations = 0;
     private int iterationsBeforeRest;
 
     public bool ShouldRest => patrolIterations >= iterationsBeforeRest;
 
-    public EnemyMelee_PatrolState(EnemyController enemy, Transform[] waypoints, int iterationsBeforeRest = 4)
+    public EnemyMelee_PatrolState(EnemyController enemy, List<WaypointNode> waypoints, AStarPathfinder pathfinder, int iterationsBeforeRest = 4)
     {
+        this.pathfinder = pathfinder;
         _enemy = enemy;
         this.waypoints = waypoints;
         this.iterationsBeforeRest = iterationsBeforeRest;
@@ -23,26 +29,40 @@ public class EnemyMelee_PatrolState : State
 
     public override void Enter()
     {
-       
         patrolIterations = 0;
+        CalculatePath();
+    }
+
+    private void CalculatePath()
+    {
+        WaypointNode start = pathfinder.GetClosestNode(_enemy.transform.position);
+
+        WaypointNode end = waypoints[currentWaypoint];
+
+        currentPath = pathfinder.FindPath(start, end);
+        currentPathIndex = 0;
     }
 
     public override void Execute()
     {
-        if (waypoints == null || waypoints.Length == 0) return;
+        if (currentPath == null || currentPath.Count == 0)
+            return;
 
-        Transform waypoint = waypoints[currentWaypoint];
-        Vector3 dir = (waypoint.position - _enemy.transform.position).NoY();
-        float distance = dir.magnitude;
+        WaypointNode targetNode = currentPath[currentPathIndex];
 
-       
+        Vector3 dir = targetNode.transform.position - _enemy.transform.position;
 
-        _enemy.Move(dir);
-        
+        _enemy.Move(dir.NoY());
 
-        if (distance <= waypointTolerance)
+        if (dir.magnitude < waypointTolerance)
         {
-            AdvanceToNextWaypoint();
+            currentPathIndex++;
+
+            if (currentPathIndex >= currentPath.Count)
+            {
+                AdvanceToNextWaypoint();
+                CalculatePath();
+            }
         }
     }
 
@@ -50,15 +70,15 @@ public class EnemyMelee_PatrolState : State
     {
 
 
-        if (waypoints.Length == 1) return;
+        if (waypoints.Count == 1) return;
 
         currentWaypoint += direction;
         patrolIterations++;
 
        
-        if (currentWaypoint >= waypoints.Length)
+        if (currentWaypoint >= waypoints.Count)
         {
-            currentWaypoint = waypoints.Length - 2;
+            currentWaypoint = waypoints.Count - 2;
             direction = -1;
         }
         else if (currentWaypoint < 0)

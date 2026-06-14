@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
@@ -19,6 +20,11 @@ public class EnemyController : MonoBehaviour, IDamageable
     public float speed;
     public Vector3 currentSpeed;
     protected float speedIdle = 3f;
+
+    [Header("PathFinding")]
+    [SerializeField] protected List<WaypointNode> currentPath;
+    [SerializeField] protected int currentPathIndex;
+    [SerializeField] protected AStarPathfinder pathfinder;
 
     [Header("Perception")]
     //[SerializeField] private float perceptionInterval = 0.2f;
@@ -143,7 +149,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     public void MoveWithSteering(Vector3 dir)  // Utiliza el steering para moverse, teniendo en cuenta el obstacle avoidance
     {
         dir = obstacleAvoidance.GetDir(dir).NoY();
-
+        Look(dir);
         Vector3 desired_velocity = dir.normalized * speed;
         Vector3 steering = desired_velocity - currentSpeed;
 
@@ -154,7 +160,33 @@ public class EnemyController : MonoBehaviour, IDamageable
         vel.y = 0;
         _rb.velocity = vel;
     }
+    public void CalculatePathTo(Vector3 destination)
+    {
+        WaypointNode start = pathfinder.GetClosestNode(transform.position);
+        WaypointNode end = pathfinder.GetClosestNode(destination);
 
+        currentPath = pathfinder.FindPath(start, end);
+        currentPathIndex = 0;
+    }
+
+    public bool FollowCurrentPath()
+    {
+        if (currentPath == null || currentPathIndex >= currentPath.Count)
+            return true; 
+
+        WaypointNode node = currentPath[currentPathIndex];
+
+        Vector3 dir = node.transform.position - transform.position;
+
+        Move(dir.NoY()); 
+
+        if (dir.magnitude < 1f)
+        {
+            currentPathIndex++;
+        }
+
+        return currentPathIndex >= currentPath.Count;
+    }
     public void Stop()
     {
         _rb.velocity = new Vector3(0, _rb.velocity.y, 0);

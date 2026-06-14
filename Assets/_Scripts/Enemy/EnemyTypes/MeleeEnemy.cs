@@ -18,8 +18,6 @@ public class MeleeEnemy : EnemyController
     public float attackRange = 2f;
     public float attackCooldown = 3f;
 
-    [Header("Patroll Settings")]
-    public Transform[] patrolWaypoints;
     public int iterationsBeforeRest = 4;
     public float idleDuration = 3f;
 
@@ -40,7 +38,7 @@ public class MeleeEnemy : EnemyController
         meleeEnemyFsm = new FSM();
 
         _idleState = new EnemyIdleState(this, idleDuration);// estos los creo para que el behaviour Tree los guarde de referencia y los cambie despues y asi la FSM no se entera de lo que esta pasando dentro del estado ni sus metodos(ni deberia).
-        _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, iterationsBeforeRest);// lo mismo acá
+        _patrolState = new EnemyMelee_PatrolState(this, currentPath, pathfinder, iterationsBeforeRest);// lo mismo acá
 
 
         //registramos los estados en la fsm
