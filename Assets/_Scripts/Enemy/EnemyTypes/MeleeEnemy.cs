@@ -24,6 +24,11 @@ public class MeleeEnemy : EnemyController
     [Header("Patrol")]
     public List<WaypointNode> patrolWaypoints;
 
+    [Header("Roullete Dinamica")]
+    [SerializeField] private float allyDetectionRadius = 8f;   
+    [SerializeField] private float berserkerBonusPerAlly = 15f; 
+    [SerializeField] private LayerMask enemyLayer;
+
     QuestionNode rootNode;
     FSM meleeEnemyFsm;
     private EnemyIdleState _idleState;
@@ -110,14 +115,35 @@ public class MeleeEnemy : EnemyController
     // función  que determina el % de que salgan cada uno en Wheel Roulette.
     private CombatReaction RollCombatReaction()
     {
+        
+        int nearbyAllies = CountNearbyAllies();
+
+        // aumenta la probalidad de salir berseker con mayor cantidad de aliados con respecto a las otras specs.
+        float berserkerWeight = 30f + (nearbyAllies * berserkerBonusPerAlly);
+
         var weights = new Dictionary<CombatReaction, float>
-        {
-            { CombatReaction.Berserker, 30f },
-            { CombatReaction.Normal,    45f },
-            { CombatReaction.Coward,    25f }
-        };
+    {
+        { CombatReaction.Berserker, berserkerWeight },  //
+        { CombatReaction.Normal,    45f },
+        { CombatReaction.Coward,    25f }
+    };
 
         return Extensions.RouletteWheelSelection(weights);
+    }
+
+    //contamos aliados cercanos en un radio
+    private int CountNearbyAllies()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, allyDetectionRadius, enemyLayer);
+
+        int count = 0;
+        foreach (var hit in hits)
+        {
+            // No me cuento a mí mismo
+            if (hit.gameObject == gameObject) continue;
+            count++;
+        }
+        return count;
     }
 
     private void TryRollReaction()   // La ejecutamos 
