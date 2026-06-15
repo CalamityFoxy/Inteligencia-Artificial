@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
@@ -5,9 +6,13 @@ public class RangeEnemy : EnemyController
 {
     QuestionNode rootNode;
     FSM rangeEnemyFsm;
+
     [Header("Patroll Settings")]
     public int iterationsBeforeRest = 4;
     public float idleDuration = 3f;
+
+    [Header("Patrol")]
+    public List<WaypointNode> patrolWaypoints;   // ? nuevo
 
     [Header("Range Attack Properties")]
     public Transform shootPosition;
@@ -21,41 +26,42 @@ public class RangeEnemy : EnemyController
     protected override void Awake()
     {
         base.Awake();
-        rangeEnemyFsm = new FSM(); // Creacion de FSM para el enemigo a distancia
+        rangeEnemyFsm = new FSM();
 
-        // Creacion y registro de estados
         _idleState = new EnemyIdleState(this, idleDuration);
-        _patrolState = new EnemyMelee_PatrolState(this, currentPath, pathfinder, iterationsBeforeRest);
+        _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, pathfinder, iterationsBeforeRest);  // ? patrolWaypoints
+
         rangeEnemyFsm.RegisterState(EnemyStateType.Idle, _idleState);
         rangeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
         rangeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyRange_ChaseState(this, Target, attackRange, attackCooldown));
         rangeEnemyFsm.RegisterState(EnemyStateType.Attack, new RangeEnemy_AttackState(this, Target, attackRange, attackCooldown, shootPosition));
+        rangeEnemyFsm.RegisterState(EnemyStateType.Search, new EnemySearchState(this));   // ? reusamos el Search del melee
         rangeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
 
-        // Craeacion de Action nodes para el behavior tree
+        // Action nodes
         ActionNode respawning = new ActionNode(Respawn);
-        ActionNode backToBase = new ActionNode(Respawn);
-        ActionNode searchFlag = new ActionNode(SearchFlag);
-
         var patroll = new ActionNode(() => rangeEnemyFsm.SetState(EnemyStateType.Patroll));
         var chasePlayer = new ActionNode(() => rangeEnemyFsm.SetState(EnemyStateType.Chase));
         var attackPlayer = new ActionNode(() => rangeEnemyFsm.SetState(EnemyStateType.Attack));
         var idle = new ActionNode(() => rangeEnemyFsm.SetState(EnemyStateType.Idle));
+        var search = new ActionNode(() => rangeEnemyFsm.SetState(EnemyStateType.Search));
 
-        // Question nodes para el behavior tree
-        QuestionNode isFLagDropped = new QuestionNode(IsFlagDropped, searchFlag, chasePlayer);
-        QuestionNode isFLagOnHome = new QuestionNode(IsFlagHome, patroll, isFLagDropped);
-        QuestionNode isFLagOnMe = new QuestionNode(IsFlagOnMe, backToBase, isFLagOnHome);
-
+        
         QuestionNode idleOrPatrol = new QuestionNode(IdleFinished, patroll, idle);
         QuestionNode notSeeingPlayer = new QuestionNode(PatrolNeedsRest, idleOrPatrol, patroll);
 
+        
         QuestionNode canAttack = new QuestionNode(TryAttack, attackPlayer, chasePlayer);
-        QuestionNode canSeeTarget = new QuestionNode(IsTargetInLos, canAttack, notSeeingPlayer);
+        // le agregamos el Search al rango
+        QuestionNode seeOrSearch = new QuestionNode(() => CanSeeTarget, canAttack, search);
+        
+        QuestionNode canSeeTarget = new QuestionNode(IsTargetTracked, seeOrSearch, notSeeingPlayer);
+
         QuestionNode isAlive = new QuestionNode(IsAlive, canSeeTarget, respawning);
 
-        rootNode = isAlive; // Raiz del behavior tree
+        rootNode = isAlive;
     }
+
 
     private bool TryAttack() // Verifica si el enemigo puede atacar al jugador, es decir, si el jugador esta dentro del rango de ataque y el enemigo lo puede ver
     {
@@ -81,7 +87,7 @@ public class RangeEnemy : EnemyController
         base.Update();
         rootNode.Execute();
         rangeEnemyFsm.Execute();
-        // Debug.Log(rangeEnemyFsm.CurrentState);
+        Debug.Log(rangeEnemyFsm.CurrentState);
     }
 
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished; 

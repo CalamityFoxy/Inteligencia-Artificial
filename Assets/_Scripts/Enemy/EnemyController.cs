@@ -127,7 +127,9 @@ public class EnemyController : MonoBehaviour, IDamageable
             return false;
         }
 
-        _loseSightTimer += Time.deltaTime;
+        if (_loseSightTimer < loseSightDelay)
+            _loseSightTimer += Time.deltaTime;
+        
         return _loseSightTimer >= loseSightDelay;
     }
 
@@ -167,6 +169,19 @@ public class EnemyController : MonoBehaviour, IDamageable
 
         currentPath = pathfinder.FindPath(start, end);
         currentPathIndex = 0;
+
+        // Ésto sirve para que si tiene un nodo atras mas cerca que lo ignore.
+        if (currentPath != null && currentPath.Count > 1)
+        {
+            Vector3 toFirst = (currentPath[0].transform.position - transform.position).NoY();
+            Vector3 toSecond = (currentPath[1].transform.position - transform.position).NoY();
+
+            // y tomamos este para que arranque como primer nodo
+            if (toFirst.magnitude < 1.5f || Vector3.Dot(toFirst.normalized, toSecond.normalized) < 0)
+            {
+                currentPathIndex = 1;
+            }
+        }
     }
 
     public bool FollowCurrentPath()

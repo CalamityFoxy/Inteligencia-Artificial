@@ -3284,6 +3284,11 @@ MonoBehaviour:
   - {fileID: 1632179769}
   - {fileID: 244628777}
   - {fileID: 1591840580}
+  - {fileID: 1091543127}
+  - {fileID: 1706254766}
+  - {fileID: 2111511987}
+  - {fileID: 1384823000}
+  - {fileID: 1704654759}
   maxConnectionDistance: 15
   wallMask:
     serializedVersion: 2
@@ -5163,8 +5168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9801074bf750ec344a9081d3d708efbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  neighbours:
-  - {fileID: 1704654759}
+  neighbours: []
   gCost: 0
   hCost: 0
   parent: {fileID: 0}
@@ -6275,14 +6279,13 @@ GameObject:
   - component: {fileID: 1615603519}
   - component: {fileID: 1615603518}
   - component: {fileID: 1615603517}
-  - component: {fileID: 1615603523}
   m_Layer: 0
   m_Name: Range_Enemy (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1615603516
 Transform:
   m_ObjectHideFlags: 0
@@ -6316,8 +6319,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   reference: {fileID: 1615603516}
-  range: 17.9
-  angle: 116.7
+  range: 11.9
+  angle: 71.9
   obsMask:
     serializedVersion: 2
     m_Bits: 8
@@ -6341,8 +6344,8 @@ MonoBehaviour:
   - {fileID: 1384823000}
   - {fileID: 1704654759}
   currentPathIndex: 0
-  pathfinder: {fileID: 1615603523}
-  loseSightDelay: 1.5
+  pathfinder: {fileID: 856591756}
+  loseSightDelay: 4
   health: 100
   maxHealth: 100
   healingPoint: {fileID: 747858152}
@@ -6355,6 +6358,10 @@ MonoBehaviour:
   obstacleAvoidanceColliders: []
   iterationsBeforeRest: 4
   idleDuration: 3
+  patrolWaypoints:
+  - {fileID: 1091543127}
+  - {fileID: 1706254766}
+  - {fileID: 2111511987}
   shootPosition: {fileID: 1082040781}
   projectilePrefab: {fileID: 681180798114000941, guid: 8ebfbc0c1f7be8345929af8e1b599f0b, type: 3}
   attackRange: 11.36
@@ -6459,26 +6466,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1615603515}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1615603523
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1615603515}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6cf750699fdfeb844aa80de717517f83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allNodes:
-  - {fileID: 1384823000}
-  - {fileID: 1704654759}
-  maxConnectionDistance: 15
-  wallMask:
-    serializedVersion: 2
-    m_Bits: 0
-  raycastHeight: 1
 --- !u!1 &1621881219
 GameObject:
   m_ObjectHideFlags: 0
@@ -7043,8 +7030,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9801074bf750ec344a9081d3d708efbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  neighbours:
-  - {fileID: 1384823000}
+  neighbours: []
   gCost: 0
   hCost: 0
   parent: {fileID: 0}
@@ -7521,7 +7507,6 @@ GameObject:
   - component: {fileID: 1837271699}
   - component: {fileID: 1837271703}
   - component: {fileID: 1837271702}
-  - component: {fileID: 1837271705}
   m_Layer: 0
   m_Name: Range_Enemy (1)
   m_TagString: Untagged
@@ -7635,8 +7620,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   reference: {fileID: 1837271698}
-  range: 17.9
-  angle: 116.7
+  range: 19.8
+  angle: 71.9
   obsMask:
     serializedVersion: 2
     m_Bits: 8
@@ -7661,8 +7646,8 @@ MonoBehaviour:
   - {fileID: 1706254766}
   - {fileID: 2111511987}
   currentPathIndex: 0
-  pathfinder: {fileID: 1837271705}
-  loseSightDelay: 1.5
+  pathfinder: {fileID: 856591756}
+  loseSightDelay: 4
   health: 100
   maxHealth: 100
   healingPoint: {fileID: 747858152}
@@ -7675,6 +7660,9 @@ MonoBehaviour:
   obstacleAvoidanceColliders: []
   iterationsBeforeRest: 4
   idleDuration: 3
+  patrolWaypoints:
+  - {fileID: 1384823000}
+  - {fileID: 1704654759}
   shootPosition: {fileID: 770010112}
   projectilePrefab: {fileID: 681180798114000941, guid: 8ebfbc0c1f7be8345929af8e1b599f0b, type: 3}
   attackRange: 11.36
@@ -7706,27 +7694,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 84
   m_CollisionDetection: 0
---- !u!114 &1837271705
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1837271697}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6cf750699fdfeb844aa80de717517f83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allNodes:
-  - {fileID: 1091543127}
-  - {fileID: 1706254766}
-  - {fileID: 2111511987}
-  maxConnectionDistance: 15
-  wallMask:
-    serializedVersion: 2
-    m_Bits: 0
-  raycastHeight: 1
 --- !u!1 &1855203236
 GameObject:
   m_ObjectHideFlags: 0
@@ -8586,7 +8553,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2059826232
 Transform:
   m_ObjectHideFlags: 0
