@@ -1988,7 +1988,7 @@ GameObject:
   - component: {fileID: 717104336}
   - component: {fileID: 717104335}
   - component: {fileID: 717104334}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Melee_Enemy 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2049,6 +2049,11 @@ MonoBehaviour:
   patrolWaypoints:
   - {fileID: 1243607742}
   - {fileID: 1632179769}
+  allyDetectionRadius: 8
+  berserkerBonusPerAlly: 15
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
   weaponObject: {fileID: 760692527}
   attackPivot: {fileID: 1834839104}
 --- !u!114 &717104335
@@ -6279,7 +6284,7 @@ GameObject:
   - component: {fileID: 1615603519}
   - component: {fileID: 1615603518}
   - component: {fileID: 1615603517}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Range_Enemy (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7507,7 +7512,7 @@ GameObject:
   - component: {fileID: 1837271699}
   - component: {fileID: 1837271703}
   - component: {fileID: 1837271702}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Range_Enemy (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8547,7 +8552,7 @@ GameObject:
   - component: {fileID: 2059826235}
   - component: {fileID: 2059826234}
   - component: {fileID: 2059826233}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Melee_Enemy 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8610,6 +8615,11 @@ MonoBehaviour:
   patrolWaypoints:
   - {fileID: 1591840580}
   - {fileID: 244628777}
+  allyDetectionRadius: 8
+  berserkerBonusPerAlly: 15
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
   weaponObject: {fileID: 2010387010}
   attackPivot: {fileID: 422263863}
 --- !u!114 &2059826234
@@ -8850,7 +8860,7 @@ GameObject:
   - component: {fileID: 2089203341}
   - component: {fileID: 2089203340}
   - component: {fileID: 2089203342}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Melee_Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9033,6 +9043,11 @@ MonoBehaviour:
   - {fileID: 1127054522}
   - {fileID: 1144057505}
   - {fileID: 1654873100}
+  allyDetectionRadius: 8
+  berserkerBonusPerAlly: 15
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
   weaponObject: {fileID: 1462442970}
   attackPivot: {fileID: 1621881220}
 --- !u!1 &2108908723
