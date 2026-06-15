@@ -1994,7 +1994,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &717104333
 Transform:
   m_ObjectHideFlags: 0
@@ -2031,7 +2031,7 @@ MonoBehaviour:
   currentPath: []
   currentPathIndex: 0
   pathfinder: {fileID: 856591756}
-  loseSightDelay: 6
+  loseSightDelay: 5
   health: 100
   maxHealth: 100
   healingPoint: {fileID: 747858152}
@@ -6285,7 +6285,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1615603516
 Transform:
   m_ObjectHideFlags: 0
@@ -6345,7 +6345,7 @@ MonoBehaviour:
   - {fileID: 1704654759}
   currentPathIndex: 0
   pathfinder: {fileID: 856591756}
-  loseSightDelay: 4
+  loseSightDelay: 5
   health: 100
   maxHealth: 100
   healingPoint: {fileID: 747858152}
@@ -7647,7 +7647,7 @@ MonoBehaviour:
   - {fileID: 2111511987}
   currentPathIndex: 0
   pathfinder: {fileID: 856591756}
-  loseSightDelay: 4
+  loseSightDelay: 5
   health: 100
   maxHealth: 100
   healingPoint: {fileID: 747858152}
@@ -8553,7 +8553,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2059826232
 Transform:
   m_ObjectHideFlags: 0
@@ -8592,7 +8592,7 @@ MonoBehaviour:
   - {fileID: 244628777}
   currentPathIndex: 0
   pathfinder: {fileID: 856591756}
-  loseSightDelay: 6
+  loseSightDelay: 5
   health: 100
   maxHealth: 100
   healingPoint: {fileID: 747858152}
@@ -8856,7 +8856,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!136 &2089203336
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -9014,7 +9014,7 @@ MonoBehaviour:
   - {fileID: 1654873100}
   currentPathIndex: 0
   pathfinder: {fileID: 856591756}
-  loseSightDelay: 6
+  loseSightDelay: 5
   health: 100
   maxHealth: 100
   healingPoint: {fileID: 747858152}
