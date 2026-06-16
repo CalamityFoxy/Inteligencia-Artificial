@@ -106,8 +106,6 @@ public class MeleeEnemy : EnemyController
         { 
             _hasRolledReaction = false;   
         }
-
-        Debug.Log(meleeEnemyFsm.CurrentState);
     }
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
     public bool PatrolNeedsRest() => _patrolState != null && _patrolState.ShouldRest;
