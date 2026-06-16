@@ -36,7 +36,7 @@ public class RangeEnemy : EnemyController
         rangeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyRange_ChaseState(this, Target, attackRange, attackCooldown));
         rangeEnemyFsm.RegisterState(EnemyStateType.Attack, new RangeEnemy_AttackState(this, Target, attackRange, attackCooldown, shootPosition));
         rangeEnemyFsm.RegisterState(EnemyStateType.Search, new EnemySearchState(this));   // ? reusamos el Search del melee
-        rangeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
+      //  rangeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
 
         // Action nodes
         ActionNode respawning = new ActionNode(Respawn);
@@ -61,7 +61,10 @@ public class RangeEnemy : EnemyController
 
         rootNode = isAlive;
     }
-
+    protected virtual void Start()
+    {
+        rangeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
+    }
 
     private bool TryAttack() // Verifica si el enemigo puede atacar al jugador, es decir, si el jugador esta dentro del rango de ataque y el enemigo lo puede ver
     {

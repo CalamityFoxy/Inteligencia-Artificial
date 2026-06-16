@@ -92,7 +92,7 @@ public class MeleeEnemy : EnemyController
 
         rootNode = isAlive;
 
-        meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll); // seteamos el estado default a patrullar
+      //  meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll); // seteamos el estado default a patrullar
     }
 
     protected override void Update()
@@ -101,11 +101,18 @@ public class MeleeEnemy : EnemyController
         rootNode.Execute();
         meleeEnemyFsm.Execute();
 
+        Debug.Log(meleeEnemyFsm.CurrentState);
+
         // hacemos esto en el update para que cuando lo pierda al player, pueda volver a dar roll selection(decida si va ser berseker,normal o coward) en la proxima vez que lo vea.
         if (!IsTargetTracked())
         { 
             _hasRolledReaction = false;   
         }
+    }
+
+    protected virtual void Start ()
+    {
+        meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll); 
     }
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
     public bool PatrolNeedsRest() => _patrolState != null && _patrolState.ShouldRest;

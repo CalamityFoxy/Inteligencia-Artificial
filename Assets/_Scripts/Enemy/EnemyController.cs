@@ -182,6 +182,7 @@ public class EnemyController : MonoBehaviour, IDamageable
                 currentPathIndex = 1;
             }
         }
+       
     }
 
     public bool FollowCurrentPath()

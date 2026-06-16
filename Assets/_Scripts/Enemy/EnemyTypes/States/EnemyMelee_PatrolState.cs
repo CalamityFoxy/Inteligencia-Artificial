@@ -41,6 +41,7 @@ public class EnemyMelee_PatrolState : State
 
         currentPath = pathfinder.FindPath(start, end);
         currentPathIndex = 0;
+       
     }
 
     public override void Execute()
