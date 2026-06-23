@@ -14,8 +14,8 @@ public class WaypointNode : MonoBehaviour
     // Dibuja el nodo y sus conexiones en la Scene view para verificar la red visualmente
     private void OnDrawGizmos()
     {
-        // El nodo en sí (esfera cyan)
-        Gizmos.color = Color.cyan;
+        
+        Gizmos.color = Color.green;
         Gizmos.DrawSphere(transform.position, 0.3f);
 
         // Líneas a cada vecino

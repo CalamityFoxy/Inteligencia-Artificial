@@ -101,7 +101,7 @@ public class MeleeEnemy : EnemyController
         rootNode.Execute();
         meleeEnemyFsm.Execute();
 
-        Debug.Log(meleeEnemyFsm.CurrentState);
+        //Debug.Log(meleeEnemyFsm.CurrentState);
 
         // hacemos esto en el update para que cuando lo pierda al player, pueda volver a dar roll selection(decida si va ser berseker,normal o coward) en la proxima vez que lo vea.
         if (!IsTargetTracked())
