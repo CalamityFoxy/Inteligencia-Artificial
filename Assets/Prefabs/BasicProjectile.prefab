@@ -121,6 +121,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   damageAmount: 10
+  explosionRadius: 1
+  damageMask:
+    serializedVersion: 2
+    m_Bits: 128
+  explosionEffect: {fileID: 3101600276897232003, guid: bd13dd6b217760e49992e1bfb46556d5, type: 3}
   lifeTime: 4
 --- !u!54 &-6508820098556304234
 Rigidbody:

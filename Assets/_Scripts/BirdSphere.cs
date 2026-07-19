@@ -5,7 +5,7 @@ public class BirdSphere : MonoBehaviour
     [SerializeField] private float explosionRadius = 5f;
     [SerializeField] private float damage = 100f;
     [SerializeField] private LayerMask damageLayers;
-
+    [SerializeField] private GameObject explosionEffect;
     private void OnCollisionEnter(Collision collision)
     {
         Explode();
@@ -18,6 +18,13 @@ public class BirdSphere : MonoBehaviour
             explosionRadius,
             damageLayers
         );
+
+        GameObject fx = Instantiate(
+               explosionEffect,
+               transform.position,
+               Quaternion.identity);
+
+        Destroy(fx, .2f);
 
         foreach (Collider hit in hits)
         {

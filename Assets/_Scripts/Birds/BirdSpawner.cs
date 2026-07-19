@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BirdSpawner : MonoBehaviour
 {
@@ -20,11 +21,19 @@ public class BirdSpawner : MonoBehaviour
     [SerializeField] private float flightHeight = 20f;
     [SerializeField] private float spawnDelay = 3f;
 
+    [SerializeField] private Image cooldownImage;
+    [SerializeField] private TMPro.TextMeshProUGUI cooldownText;
+
     private float nextSpawnTime;
     public List<Bird> Birds { get; private set; } = new();
 
     public Transform Target { get; private set; }
 
+    private void Start()
+    {
+        cooldownImage.fillAmount = 0;
+        cooldownText.gameObject.SetActive(false);
+    }
 
     public void SpawnFlock()
     {
@@ -58,12 +67,26 @@ public class BirdSpawner : MonoBehaviour
 
     private void Update()
     {
+        float remaining = Mathf.Max(0, nextSpawnTime - Time.time);
+
+        if (remaining > 0)
+        {
+            cooldownImage.fillAmount = remaining / spawnDelay;
+
+            cooldownText.gameObject.SetActive(true);
+            cooldownText.text = Mathf.CeilToInt(remaining).ToString();
+        }
+        else
+        {
+            cooldownImage.fillAmount = 0;
+            cooldownText.gameObject.SetActive(false);
+        }
+
         if (Input.GetMouseButtonDown(1) && Time.time >= nextSpawnTime)
         {
             SpawnFlock();
             nextSpawnTime = Time.time + spawnDelay;
         }
-
         if (Birds.Count == 0)
             return;
 
