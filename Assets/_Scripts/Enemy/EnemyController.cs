@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using static UnityEngine.GraphicsBuffer;
 
 public interface IDamageable
@@ -32,6 +33,7 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     [Header("Vida")]
     [SerializeField] private float health;
+    [SerializeField] private Slider healthSlider;
     [SerializeField] protected float maxHealth;
     [SerializeField] protected Transform healingPoint;
 
@@ -55,6 +57,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     protected virtual void Awake()
     {
         health = maxHealth;
+        healthSlider.value = health;
 
         _rb = GetComponent<Rigidbody>();
 
@@ -220,6 +223,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     public void TakeDamage(float damage)
     {
         health -= damage;
+        healthSlider.value = health;
         if (health <= 0)
         {
             Dead();
@@ -238,6 +242,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     public void Heal(float healingRate)
     {
         health += healingRate * Time.deltaTime;
+        healthSlider.value = health;
         health = Mathf.Clamp(health, 0, maxHealth);
     }
 

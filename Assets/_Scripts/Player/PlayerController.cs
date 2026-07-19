@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
 {
@@ -28,6 +29,7 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
     [SerializeField] private float attackAngle = 180f;
     [Header("Health")]                                  
     [SerializeField] private float health;              
+    [SerializeField] private Slider healthSlider;              
     [SerializeField] private float maxHealth = 250f;    
     [SerializeField] private Transform respawnPoint;
 
@@ -68,6 +70,7 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
         stamina = maxStamina;
         weapon.gameObject.SetActive(false);
         health = maxHealth;
+        healthSlider.value = health;
     }
 
     void Update()
@@ -194,7 +197,7 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
     public void TakeDamage(float damage)
     {
         health -= damage;
-        //Debug.Log($"Player HP: {health}");
+        healthSlider.value = health;
         if (health <= 0)
         {
             Dead();
@@ -229,6 +232,7 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
         controller.enabled = true;
 
         health = maxHealth;
+        healthSlider.value = health;
     }
     
 }
