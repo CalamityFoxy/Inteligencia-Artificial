@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
+public class PlayerController : MonoBehaviour, IDamageable, IFlagCarrier
 {
     [Header("Movement")]
     public float walkSpeed;
@@ -23,14 +23,15 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
     [SerializeField] private Transform holder;
 
     [Header("Attack Settings")]
-    [SerializeField] private Transform attackPivot; 
-    [SerializeField] private Transform weapon;      
+    [SerializeField] private Transform attackPivot;
+    [SerializeField] private Transform weapon;
     [SerializeField] private float attackSpeed = 360f;
     [SerializeField] private float attackAngle = 180f;
-    [Header("Health")]                                  
-    [SerializeField] private float health;              
-    [SerializeField] private Slider healthSlider;              
-    [SerializeField] private float maxHealth = 250f;    
+
+    [Header("Health")]
+    [SerializeField] private float health;
+    [SerializeField] private Slider healthSlider;
+    [SerializeField] private float maxHealth = 250f;
     [SerializeField] private Transform respawnPoint;
 
     private CharacterController controller;
@@ -39,7 +40,7 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
     private float stamina;
     private bool isAlive = true;
     private Flag currentFlag;
-    private bool swingLeftToRight = true; 
+    private bool swingLeftToRight = true;
     private bool isAttacking;
     private float currentAngle;
     private int attackDirection = 1;
@@ -51,11 +52,10 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
     public bool HasFlag => currentFlag != null;
     public Flag CurrentFlag => currentFlag;
 
+    
     public void SetFlag(Flag flag)
     {
-        currentFlag = flag; 
-        flag.transform.SetParent(holder);
-        flag.transform.SetPositionAndRotation(holder.position, holder.rotation);
+        currentFlag = flag;
     }
 
     public void ClearFlag()
@@ -70,6 +70,8 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
         stamina = maxStamina;
         weapon.gameObject.SetActive(false);
         health = maxHealth;
+
+        healthSlider.maxValue = maxHealth;   // para que la barra escale bien
         healthSlider.value = health;
     }
 
@@ -194,14 +196,19 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
             weapon.gameObject.SetActive(false);
         }
     }
+
+    // ----------------- DAMAGE / RESPAWN -----------------
+
     public void TakeDamage(float damage)
     {
+        if (!isAlive) return;   
+
         health -= damage;
         healthSlider.value = health;
+
         if (health <= 0)
         {
             Dead();
-           // Debug.Log("Respawning in 3 seconds...");
         }
     }
 
@@ -214,7 +221,7 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
         {
             currentFlag.Drop(transform.position);
         }
-        
+
         controller.enabled = false;
         transform.position = new Vector3(0, -400, 0);
         controller.enabled = true;
@@ -226,13 +233,12 @@ public class PlayerController : MonoBehaviour,  IDamageable, IFlagCarrier
     {
         yield return new WaitForSeconds(delay);
 
-        
         controller.enabled = false;
         transform.position = respawnPoint.position;
         controller.enabled = true;
 
         health = maxHealth;
         healthSlider.value = health;
+        isAlive = true;   // vuelvo a estar vivo
     }
-    
 }

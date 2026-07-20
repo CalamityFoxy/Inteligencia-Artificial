@@ -1,17 +1,16 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 
 public interface IDamageable
 {
     void TakeDamage(float damage);
     void Dead();
 }
-public class EnemyController : MonoBehaviour, IDamageable
+
+public class EnemyController : MonoBehaviour, IDamageable, IFlagCarrier
 {
     [Header("References")]
     public Transform Target;
@@ -27,8 +26,12 @@ public class EnemyController : MonoBehaviour, IDamageable
     [SerializeField] protected int currentPathIndex;
     [SerializeField] protected AStarPathfinder pathfinder;
 
+    [Header("Bandera")]
+    [SerializeField] private Team team = Team.AI;
+    [SerializeField] private Transform flagHolder;   // empty hijo donde se engancha la bandera
+    private Flag currentFlag;
+
     [Header("Perception")]
-    //[SerializeField] private float perceptionInterval = 0.2f;
     [SerializeField] private float loseSightDelay = 3f;
 
     [Header("Vida")]
@@ -37,37 +40,52 @@ public class EnemyController : MonoBehaviour, IDamageable
     [SerializeField] protected float maxHealth;
     [SerializeField] protected Transform healingPoint;
 
-
     [Header("ObstacleAvoidance")]
     [SerializeField] private float obstacleAvoidanceRadius;
     [SerializeField] private float obstacleAvoidanceAngle;
     [SerializeField] private float obstacleAvoidancePersonalArea;
     [SerializeField] private LayerMask obstacleAvoidanceMask;
     [SerializeField] private Collider[] obstacleAvoidanceColliders;
+
     public bool CanSeeTarget { get; private set; }
     public Vector3 LastKnownTargetPosition { get; private set; }
     public float Health { get => health; set => health = value; }
 
+    // ----- IFlagCarrier -----
+    public Transform Transform => transform;
+    public Transform FlagHolder => flagHolder;
+    public Team Team => team;
+    public bool HasFlag => currentFlag != null;
+    public Flag CurrentFlag => currentFlag;
+
+    public void SetFlag(Flag flag) => currentFlag = flag;
+    public void ClearFlag() => currentFlag = null;
+
+    private bool _isDead = false;
     private bool _hasEverSeenTarget = false;
     private ObstacleAvoidance obstacleAvoidance;
     private Rigidbody _rb;
-    private float _perceptionTimer;
     private float _loseSightTimer;
 
     protected virtual void Awake()
     {
         health = maxHealth;
-        healthSlider.value = health;
+
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = health;
+        }
 
         _rb = GetComponent<Rigidbody>();
 
         obstacleAvoidance = new ObstacleAvoidance(
-       transform,
-       obstacleAvoidanceRadius,
-       obstacleAvoidanceAngle,
-       obstacleAvoidancePersonalArea,
-       obstacleAvoidanceMask
-   );
+            transform,
+            obstacleAvoidanceRadius,
+            obstacleAvoidanceAngle,
+            obstacleAvoidancePersonalArea,
+            obstacleAvoidanceMask
+        );
     }
 
     protected virtual void Update()
@@ -75,37 +93,66 @@ public class EnemyController : MonoBehaviour, IDamageable
         UpdatePerception();
     }
 
-
-    public bool IsTargetInLos() // Comprueba si el target está en línea de visión, utilizando el sistema de Line of Sight
+    public bool IsTargetInLos() // Comprueba si el target está en línea de visión, usando el sistema de Line of Sight
     {
         if (los.CheckView(Target) && los.CheckAngle(Target) && los.CheckRange(Target)) return true; else return false;
     }
 
     public void AttackPlayer() { }
     public bool IsTargetTracked() => !ShouldLoseTarget();
-    public bool IsFlagHome() { return true; }
-    public bool IsFlagOnMe() { return false; }
-    public bool IsFlagDropped() { return false; }
     public bool IsAlive() => health > 0;
-    public void Respawn() { ; }
+    public void Respawn() {; }
 
-    public void Dead()
+    // ----- Preguntas de bandera para el Behaviour Tree -----
+
+    // ¿Estoy llevando yo la bandera enemiga?
+    public bool IsFlagOnMe() => currentFlag != null;
+
+    // ¿Mi propia bandera está en su base?
+    public bool IsFlagHome()
     {
-        health = 0;
-        transform.position = new Vector3(0, -100, 0);
-        StartCoroutine(waitAndRespawn(3.5f));
+        var myFlag = CTF_GameManager.Instance.GetOwnFlag(team);
+        return myFlag != null && myFlag.State == FlagState.Home;
     }
-    private IEnumerator waitAndRespawn(float delay)
+
+    // ¿Mi propia bandera está tirada en el piso (alguien la robó y la soltó)?
+    public bool IsFlagDropped()
     {
-        Debug.Log("Respawning in " + delay + " seconds...");
-        yield return new WaitForSeconds(delay);
-        health = maxHealth;
-        transform.position = healingPoint.position;
+        var myFlag = CTF_GameManager.Instance.GetOwnFlag(team);
+        return myFlag != null && myFlag.State == FlagState.Dropped;
     }
+
     public void SearchFlag() { }
     public void returnToBase() { }
 
-    private void UpdatePerception() // Actualiza la percepción del enemigo, comprobando si puede ver al target y actualizando la última posición conocida
+    public void Dead()
+    {
+        if (_isDead) return;   // ya estoy muerto, no apilo respawns
+        _isDead = true;
+
+        health = 0;
+        if (healthSlider != null) healthSlider.value = health;
+
+        // Si llevaba la bandera, la suelto donde morí (antes de teleportarme)
+        if (currentFlag != null)
+            currentFlag.Drop(transform.position);
+
+        transform.position = new Vector3(0, -100, 0);
+        StartCoroutine(waitAndRespawn(3.5f));
+    }
+
+    private IEnumerator waitAndRespawn(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        health = maxHealth;
+        if (healthSlider != null) healthSlider.value = health;
+
+        transform.position = healingPoint.position;
+        _isDead = false;   // vuelvo a estar vivo
+    }
+
+    private void UpdatePerception() // Actualiza la percepción: si ve al target y cuál fue su última posición conocida
     {
         CanSeeTarget =
             los.CheckRange(Target) &&
@@ -121,7 +168,6 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     public bool ShouldLoseTarget()
     {
-
         if (!_hasEverSeenTarget) return true;
 
         if (CanSeeTarget)
@@ -132,12 +178,11 @@ public class EnemyController : MonoBehaviour, IDamageable
 
         if (_loseSightTimer < loseSightDelay)
             _loseSightTimer += Time.deltaTime;
-        
+
         return _loseSightTimer >= loseSightDelay;
     }
 
-
-    public void Move(Vector3 dir)  // Movimiento directo, sin steering, pero teniendo en cuenta el obstacle avoidance para no chocar contra paredes
+    public void Move(Vector3 dir)  // Movimiento directo, sin steering, pero con obstacle avoidance para no chocar contra paredes
     {
         dir = obstacleAvoidance.GetDir(dir, false);
         dir.y = 0f;
@@ -147,11 +192,9 @@ public class EnemyController : MonoBehaviour, IDamageable
         _rb.velocity = velocity;
 
         Look(dir);
-
     }
 
-
-    public void MoveWithSteering(Vector3 dir)  // Utiliza el steering para moverse, teniendo en cuenta el obstacle avoidance
+    public void MoveWithSteering(Vector3 dir)  // Movimiento con steering, teniendo en cuenta el obstacle avoidance
     {
         dir = obstacleAvoidance.GetDir(dir).NoY();
         Look(dir);
@@ -165,6 +208,7 @@ public class EnemyController : MonoBehaviour, IDamageable
         vel.y = 0;
         _rb.velocity = vel;
     }
+
     public void CalculatePathTo(Vector3 destination)
     {
         WaypointNode start = pathfinder.GetClosestNode(transform.position);
@@ -185,12 +229,10 @@ public class EnemyController : MonoBehaviour, IDamageable
                 currentPathIndex = 1;
             }
         }
-       
     }
 
     public bool FollowCurrentPath()
     {
-        
         if (currentPath == null || currentPathIndex >= currentPath.Count)
         {
             Stop();
@@ -200,7 +242,6 @@ public class EnemyController : MonoBehaviour, IDamageable
         WaypointNode node = currentPath[currentPathIndex];
         Vector3 dir = node.transform.position - transform.position;
 
-        
         if (dir.NoY().magnitude < 1f)
         {
             currentPathIndex++;
@@ -210,6 +251,7 @@ public class EnemyController : MonoBehaviour, IDamageable
         Move(dir.NoY());
         return false;
     }
+
     public void Stop()
     {
         _rb.velocity = new Vector3(0, _rb.velocity.y, 0);
@@ -220,15 +262,20 @@ public class EnemyController : MonoBehaviour, IDamageable
         if (dir != Vector3.zero)
             transform.forward = dir;
     }
+
     public void TakeDamage(float damage)
     {
+        if (_isDead) return;   // muerto: ignoro daño hasta respawnear
+
         health -= damage;
-        healthSlider.value = health;
+        if (healthSlider != null) healthSlider.value = health;
+
         if (health <= 0)
         {
             Dead();
         }
     }
+
     public bool IsLowHP()
     {
         return health <= maxHealth * 0.35f;
@@ -242,11 +289,11 @@ public class EnemyController : MonoBehaviour, IDamageable
     public void Heal(float healingRate)
     {
         health += healingRate * Time.deltaTime;
-        healthSlider.value = health;
         health = Mathf.Clamp(health, 0, maxHealth);
+        if (healthSlider != null) healthSlider.value = health;
     }
 
-    public void FleeFromTarget()  // Flee del target, utilizando object avoidance 
+    public void FleeFromTarget()  // Flee del target, con obstacle avoidance
     {
         Vector3 dir = (transform.position - Target.position).NoY();
 
@@ -270,19 +317,14 @@ public class EnemyController : MonoBehaviour, IDamageable
         return Vector3.Distance(transform.position, healingPoint.position) <= threshold;
     }
 
-
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-
-        // Radio de avoidance
         Gizmos.DrawWireSphere(transform.position, obstacleAvoidanceRadius);
 
-        // Área personal 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, obstacleAvoidancePersonalArea);
 
-        // Ángulo de detección
         Gizmos.color = Color.cyan;
 
         Vector3 forward = transform.forward;
@@ -294,7 +336,6 @@ public class EnemyController : MonoBehaviour, IDamageable
         Gizmos.DrawLine(transform.position, transform.position + leftDir * obstacleAvoidanceRadius);
         Gizmos.DrawLine(transform.position, transform.position + rightDir * obstacleAvoidanceRadius);
 
-        // Arco visual 
         int segments = 20;
         Vector3 prevPoint = transform.position + leftDir * obstacleAvoidanceRadius;
 
@@ -309,7 +350,6 @@ public class EnemyController : MonoBehaviour, IDamageable
             prevPoint = nextPoint;
         }
 
-        // Colliders detectados 
         if (obstacleAvoidanceColliders != null)
         {
             Gizmos.color = Color.magenta;
@@ -321,10 +361,27 @@ public class EnemyController : MonoBehaviour, IDamageable
             }
         }
 
+        // Path actual de A*
+        if (currentPath != null && currentPath.Count > 0)
+        {
+            for (int i = 0; i < currentPath.Count; i++)
+            {
+                if (currentPath[i] == null) continue;
 
+                Gizmos.color = Color.green;
+                Gizmos.DrawSphere(currentPath[i].transform.position, 0.4f);
+
+                if (i < currentPath.Count - 1 && currentPath[i + 1] != null)
+                    Gizmos.DrawLine(currentPath[i].transform.position, currentPath[i + 1].transform.position);
+            }
+
+            if (currentPathIndex < currentPath.Count && currentPath[currentPathIndex] != null)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(currentPath[currentPathIndex].transform.position, 0.6f);
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(transform.position, currentPath[currentPathIndex].transform.position);
+            }
+        }
     }
-
-
-
- 
 }

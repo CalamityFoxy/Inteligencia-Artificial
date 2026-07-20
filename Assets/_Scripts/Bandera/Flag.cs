@@ -6,11 +6,19 @@ public enum FlagState
     Carried,
     Dropped
 }
+
+
 public class Flag : MonoBehaviour
 {
+
+    [ContextMenu("TEST - Forzar Drop")]
+    private void DebugForceDrop()
+    {
+        Drop(transform.position); //esto es para testear la bandera
+    }
     [Header("Configuration")]
     [SerializeField] private Team ownerTeam;
-    [SerializeField] private Transform homePoint;
+    //[SerializeField] private Transform homePoint;
 
     Vector3 startRotation;
     Collider grabTrigger;
@@ -18,19 +26,28 @@ public class Flag : MonoBehaviour
     public FlagState State { get; private set; } = FlagState.Home;
     public IFlagCarrier Carrier { get; private set; }
 
+    private Vector3 homePosition;
+    private Quaternion homeRotation;
     private void Awake()
     {
         grabTrigger = GetComponent<Collider>();
-        grabTrigger.enabled = true;
-        startRotation = transform.rotation.eulerAngles;
+
+        homePosition = transform.position;
+        homeRotation = transform.rotation;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        var carrier = other.GetComponent<IFlagCarrier>();
+        var carrier = other.GetComponentInParent<IFlagCarrier>();
         if (carrier == null) return;
         if (State == FlagState.Carried) return;
-        if (carrier.Team == ownerTeam && State != FlagState.Dropped) return;
+
+        
+        if (carrier.Team == ownerTeam)
+        {
+            if (State == FlagState.Dropped) ReturnHome();
+            return;
+        }
 
         PickUp(carrier);
     }
@@ -41,6 +58,11 @@ public class Flag : MonoBehaviour
         grabTrigger.enabled = false;
         carrier.SetFlag(this);
         State = FlagState.Carried;
+
+        
+        transform.SetParent(carrier.FlagHolder);
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
     }
 
     public void Drop(Vector3 position)
@@ -55,11 +77,13 @@ public class Flag : MonoBehaviour
 
     public void ReturnHome()
     {
+        Carrier?.ClearFlag();
         Carrier = null;
         State = FlagState.Home;
 
         transform.SetParent(null);
-        transform.position = homePoint.position;
+        transform.SetPositionAndRotation(homePosition, homeRotation);
+
         grabTrigger.enabled = true;
     }
 }

@@ -21,8 +21,17 @@ public class CTF_GameManager : MonoBehaviour
     [Header("UI de fin")]
     [SerializeField] private GameObject victoryPanel;   
     [SerializeField] private GameObject defeatPanel;    
-    public TextMeshProUGUI timerText;                   
+    public TextMeshProUGUI timerText;
 
+    [Header("Banderas")]
+    [SerializeField] private Flag playerFlag;
+    [SerializeField] private Flag aiFlag;
+
+
+    public Flag GetOwnFlag(Team team) => team == Team.Player ? playerFlag : aiFlag;
+
+
+    public Flag GetEnemyFlag(Team team) => team == Team.Player ? aiFlag : playerFlag;
     private void Awake()
     {
         Instance = this;
@@ -64,11 +73,11 @@ public class CTF_GameManager : MonoBehaviour
         playerTeamText.text = teamAScore.ToString();
         iaTeamText.text = teamBScore.ToString();
 
-        
+
         if (teamAScore >= scoreToWin)
-        {
             Victory();
-        }
+        else if (teamBScore >= scoreToWin)
+            Defeat();
     }
 
     private void Victory()
