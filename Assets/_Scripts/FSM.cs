@@ -10,7 +10,9 @@ public enum EnemyStateType
     ReturnToBase,
     Flee,
     Heal,
-    Search
+    Search,
+    GoToEnemyFlag,   
+    RecoverOwnFlag   
 }
 
 public class FSM

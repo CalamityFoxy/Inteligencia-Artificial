@@ -15,9 +15,8 @@ public class BaseZone : MonoBehaviour
 
         Flag carriedFlag = carrier.CurrentFlag;
         if (carriedFlag.OwnerTeam == team) return;   // no capturo mi propia bandera
-
-        // Regla clásica: mi bandera tiene que estar en casa para poder anotar
-        if (ownFlag.State != FlagState.Home) return;
+        
+      
 
         CTF_GameManager.Instance.AddScore(carrier.Team);
         carriedFlag.ReturnHome();

@@ -1,15 +1,11 @@
-﻿
-
-
-
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 using UnityEngine;
+
 public enum CombatReaction
 {
-    Berserker,   // 30% este nunca se escapa
-    Normal,      // 45% al tener 25% se escapa
-    Coward       // 25% al perder 1/3 de su vida se las toma a curarse
+    Berserker,   // nunca se escapa
+    Normal,      // al tener 25% se escapa
+    Coward       // al perder 1/3 de su vida se va a curar
 }
 
 public class MeleeEnemy : EnemyController
@@ -24,10 +20,13 @@ public class MeleeEnemy : EnemyController
     [Header("Patrol")]
     public List<WaypointNode> patrolWaypoints;
 
-    [Header("Roullete Dinamica")]
-    [SerializeField] private float allyDetectionRadius = 8f;   
-    [SerializeField] private float berserkerBonusPerAlly = 15f; 
+    [Header("Roulette Dinámica")]
+    [SerializeField] private float allyDetectionRadius = 8f;
+    [SerializeField] private float berserkerBonusPerAlly = 15f;
     [SerializeField] private LayerMask enemyLayer;
+
+    public GameObject weaponObject;
+    public Transform attackPivot;
 
     QuestionNode rootNode;
     FSM meleeEnemyFsm;
@@ -36,147 +35,152 @@ public class MeleeEnemy : EnemyController
     private CombatReaction _currentReaction;
     private bool _hasRolledReaction = false;
 
-
-    public GameObject weaponObject;
-    public Transform attackPivot;
     protected override void Awake()
     {
         base.Awake();
 
         meleeEnemyFsm = new FSM();
 
-        _idleState = new EnemyIdleState(this, idleDuration);// estos los creo para que el behaviour Tree los guarde de referencia y los cambie despues y asi la FSM no se entera de lo que esta pasando dentro del estado ni sus metodos(ni deberia).
-        _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, pathfinder, iterationsBeforeRest);// lo mismo acá
+        _idleState = new EnemyIdleState(this, idleDuration);
+        _patrolState = new EnemyMelee_PatrolState(this, patrolWaypoints, pathfinder, iterationsBeforeRest);
 
-
-
-        //registramos los estados en la fsm
+        // Estados existentes
         meleeEnemyFsm.RegisterState(EnemyStateType.Idle, _idleState);
         meleeEnemyFsm.RegisterState(EnemyStateType.Patroll, _patrolState);
         meleeEnemyFsm.RegisterState(EnemyStateType.Flee, new EnemyFleeState(this, healingPoint));
         meleeEnemyFsm.RegisterState(EnemyStateType.Heal, new EnemyHealState(this));
-        meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown,weaponObject,attackPivot));
+        meleeEnemyFsm.RegisterState(EnemyStateType.Chase, new EnemyMelee_ChaseState(this, Target, attackRange, attackCooldown, weaponObject, attackPivot));
         meleeEnemyFsm.RegisterState(EnemyStateType.Search, new EnemySearchState(this));
 
-        // creamos los nodos que vamos a utilizar en el BT
-        ActionNode respawning = new ActionNode(Respawn);
-        ActionNode searchFlag = new ActionNode(SearchFlag);
-        ActionNode attackPlayer = new ActionNode(AttackPlayer);
-        ActionNode goBase = new ActionNode(returnToBase);
+        // Estados de bandera: los tres son el mismo estado con distinto destino
+        meleeEnemyFsm.RegisterState(EnemyStateType.GoToEnemyFlag,
+            new EnemyGoToPointState(this, () => CTF_GameManager.Instance.GetEnemyFlag(Team).transform.position));
 
+        meleeEnemyFsm.RegisterState(EnemyStateType.RecoverOwnFlag,
+            new EnemyGoToPointState(this, () => CTF_GameManager.Instance.GetOwnFlag(Team).transform.position));
+
+        meleeEnemyFsm.RegisterState(EnemyStateType.ReturnToBase,
+            new EnemyGoToPointState(this, () => CTF_GameManager.Instance.GetBasePosition(Team)));
+
+        // Hojas del árbol
+        ActionNode respawning = new ActionNode(Respawn);
         var idle = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Idle));
         var patrol = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Patroll));
-        var chase = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Chase));
+        var search = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Search));
         var flee = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Flee));
         var heal = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Heal));
-        var search = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.Search));
+        var goToEnemyFlag = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.GoToEnemyFlag));
+        var recoverOwnFlag = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.RecoverOwnFlag));
+        var returnToBase = new ActionNode(() => meleeEnemyFsm.SetState(EnemyStateType.ReturnToBase));
 
-        // aca decide que tipo de enemigo va ser cual lo ve al player
+        // Al ver al player tira la ruleta y decide qué personalidad tiene
         var chaseAfterRoll = new ActionNode(() =>
         {
             TryRollReaction();
             meleeEnemyFsm.SetState(EnemyStateType.Chase);
         });
 
-        // creamos el recorrido del BT, de raiz al ultimo
+        //  Rama de objetivo: qué hago cuando no hay player a la vista 
         QuestionNode idleOrPatrol = new QuestionNode(IdleFinished, patrol, idle);
-        QuestionNode notSeeingPlayer = new QuestionNode(PatrolNeedsRest, idleOrPatrol, patrol);
+        QuestionNode patrolOrRest = new QuestionNode(PatrolNeedsRest, idleOrPatrol, patrol);
+        // Me tocó el rol de atacante? Sí si voy por la bandera enemiga.  Si no patrullo.
+        QuestionNode amIAttacker = new QuestionNode(() => CTF_GameManager.Instance.IsAttacker(this), goToEnemyFlag, patrolOrRest);
+        // Mi bandera está en casa? Si no, voy hacia ella esté donde esté (tirada o encima del ladrón)
+        QuestionNode myFlagHome = new QuestionNode(IsFlagHome, amIAttacker, recoverOwnFlag);
+
+        //  Rama de combate 
         QuestionNode seeOrSearch = new QuestionNode(() => CanSeeTarget, chaseAfterRoll, search);
-        QuestionNode canSee = new QuestionNode(IsTargetTracked, seeOrSearch, notSeeingPlayer);
+        QuestionNode canSee = new QuestionNode(IsTargetTracked, seeOrSearch, myFlagHome);
+
+        //  Curación según personalidad 
         QuestionNode isHealed = new QuestionNode(IsHealed, canSee, heal);
         QuestionNode reachedHealZone = new QuestionNode(() => IsAtHealingZone(healingPoint), isHealed, flee);
         QuestionNode shouldFlee = new QuestionNode(ShouldFleeForHealing, reachedHealZone, canSee);
 
+        // ¿Llevo la bandera? Prioridad máxima la llevo a mi base
+        QuestionNode hasFlag = new QuestionNode(IsFlagOnMe, returnToBase, shouldFlee);
 
-        QuestionNode isAlive = new QuestionNode(IsAlive, shouldFlee, respawning);
+        QuestionNode isAlive = new QuestionNode(IsAlive, hasFlag, respawning);
 
         rootNode = isAlive;
+    }
 
-      //  meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll); // seteamos el estado default a patrullar
+    protected virtual void Start()
+    {
+        CTF_GameManager.Instance.RegisterAttackerCandidate(this);
+        meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll);
     }
 
     protected override void Update()
     {
-        base.Update(); 
+        base.Update();
         rootNode.Execute();
         meleeEnemyFsm.Execute();
 
-        //Debug.Log(meleeEnemyFsm.CurrentState);
-
-        // hacemos esto en el update para que cuando lo pierda al player, pueda volver a dar roll selection(decida si va ser berseker,normal o coward) en la proxima vez que lo vea.
+      
+        // Si pierde al player, resetea la ruleta para volver a tirarla la próxima vez que lo vea
         if (!IsTargetTracked())
-        { 
-            _hasRolledReaction = false;   
+        {
+            _hasRolledReaction = false;
         }
     }
 
-    protected virtual void Start ()
-    {
-        meleeEnemyFsm.SetInitialState(EnemyStateType.Patroll); 
-    }
     public bool IdleFinished() => _idleState != null && _idleState.IdleFinished;
     public bool PatrolNeedsRest() => _patrolState != null && _patrolState.ShouldRest;
 
-    // función  que determina el % de que salgan cada uno en Wheel Roulette.
+    // El peso del Berserker sube según cuántos aliados tenga cerca (ruleta con peso dinámico)
     private CombatReaction RollCombatReaction()
     {
-        
         int nearbyAllies = CountNearbyAllies();
-
-        // aumenta la probalidad de salir berseker con mayor cantidad de aliados con respecto a las otras specs.
         float berserkerWeight = 30f + (nearbyAllies * berserkerBonusPerAlly);
 
         var weights = new Dictionary<CombatReaction, float>
-    {
-        { CombatReaction.Berserker, berserkerWeight },  //
-        { CombatReaction.Normal,    45f },
-        { CombatReaction.Coward,    25f }
-    };
+        {
+            { CombatReaction.Berserker, berserkerWeight },
+            { CombatReaction.Normal,    45f },
+            { CombatReaction.Coward,    25f }
+        };
 
         return Extensions.RouletteWheelSelection(weights);
     }
 
-    //contamos aliados cercanos en un radio
     private int CountNearbyAllies()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, allyDetectionRadius, enemyLayer);
-
         int count = 0;
         foreach (var hit in hits)
         {
-            // No me cuento a mí mismo
             if (hit.gameObject == gameObject) continue;
             count++;
         }
         return count;
     }
 
-    private void TryRollReaction()   // La ejecutamos 
+    private void TryRollReaction()
     {
         if (!_hasRolledReaction)
         {
             _currentReaction = RollCombatReaction();
             _hasRolledReaction = true;
-
+            Debug.Log($"Roulette result: {_currentReaction} | {gameObject.name}");
         }
     }
 
+    // Cada personalidad tiene un umbral distinto de vida para salir a curarse
     public bool ShouldFleeForHealing()
     {
         if (!_hasRolledReaction) return false;
 
         float threshold;
-
-        // cantidad de vida para que vuelvan, dependiendo la cantidad de treshold entre 0 (sin vida) o 1f (full vida). Como habiamos dicho normal se vuelve al 25% a curarse, el coward en 1/3 y berseker pelea hasta la muerte
         switch (_currentReaction)
         {
             case CombatReaction.Berserker:
-                return false;
+                return false;              // pelea hasta morir
             case CombatReaction.Normal:
-                threshold = 0.25f; 
+                threshold = 0.25f;
                 break;
             case CombatReaction.Coward:
-                threshold = 0.66f; // cantidad de vida para que vuelvan 1/3
+                threshold = 0.66f;
                 break;
             default:
                 return false;
@@ -184,6 +188,4 @@ public class MeleeEnemy : EnemyController
 
         return Health <= maxHealth * threshold;
     }
-
-
 }

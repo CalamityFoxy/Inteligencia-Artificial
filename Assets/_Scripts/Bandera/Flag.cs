@@ -16,6 +16,8 @@ public class Flag : MonoBehaviour
     {
         Drop(transform.position); //esto es para testear la bandera
     }
+
+
     [Header("Configuration")]
     [SerializeField] private Team ownerTeam;
     //[SerializeField] private Transform homePoint;

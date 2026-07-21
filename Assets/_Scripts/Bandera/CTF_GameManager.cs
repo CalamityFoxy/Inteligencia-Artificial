@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,6 +28,15 @@ public class CTF_GameManager : MonoBehaviour
     [SerializeField] private Flag playerFlag;
     [SerializeField] private Flag aiFlag;
 
+    [Header("Bases")]
+    [SerializeField] private Transform playerBase;
+    [SerializeField] private Transform aiBase;
+
+    [Header("Coordinación IA")]
+    [SerializeField] private float roleCheckInterval = 1f;
+    private readonly List<EnemyController> attackerCandidates = new();
+    private EnemyController currentAttacker;
+    private float roleTimer;
 
     public Flag GetOwnFlag(Team team) => team == Team.Player ? playerFlag : aiFlag;
 
@@ -58,6 +68,13 @@ public class CTF_GameManager : MonoBehaviour
         if (timer <= 0f)
         {
             Defeat();
+        }
+
+        roleTimer += Time.deltaTime;
+        if (roleTimer >= roleCheckInterval)
+        {
+            UpdateAttackerRole();
+            roleTimer = 0f;
         }
     }
 
@@ -100,5 +117,55 @@ public class CTF_GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;   
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public Vector3 GetBasePosition(Team team) => team == Team.Player ? playerBase.position : aiBase.position;
+
+    // Los melees se anotan solos al arrancar
+    public void RegisterAttackerCandidate(EnemyController enemy)
+    {
+        if (!attackerCandidates.Contains(enemy))
+            attackerCandidates.Add(enemy);
+    }
+
+    
+    public bool IsAttacker(EnemyController enemy) => currentAttacker == enemy;
+
+    
+    private void UpdateAttackerRole()
+    {
+        Flag targetFlag = GetEnemyFlag(Team.AI);   // la bandera que la IA quiere robar
+        if (targetFlag == null) return;
+
+        // Si un aliado ya la está llevando, nadie más tiene que ir
+        if (targetFlag.State == FlagState.Carried)
+        {
+            currentAttacker = null;
+            return;
+        }
+
+        // Si el atacante actual sigue siendo válido lo mantengo,
+        // así el rol no salta entre dos enemigos que están a distancias parecidas
+        if (currentAttacker != null && currentAttacker.IsAlive() && !currentAttacker.HasFlag)
+            return;
+
+        // Elijo el candidato vivo más cercano a la bandera
+        EnemyController closest = null;
+        float closestDist = Mathf.Infinity;
+        Vector3 flagPos = targetFlag.transform.position;
+
+        foreach (var candidate in attackerCandidates)
+        {
+            if (candidate == null || !candidate.IsAlive() || candidate.HasFlag) continue;
+
+            float d = Vector3.Distance(candidate.transform.position, flagPos);
+            if (d < closestDist)
+            {
+                closestDist = d;
+                closest = candidate;
+            }
+        }
+
+        currentAttacker = closest;
     }
 }
